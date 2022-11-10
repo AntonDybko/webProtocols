@@ -20,7 +20,7 @@ const printGame = (game) =>{
     console.log("-------------------")
 }
 
-const ai = (game) => {
+const ai = (game, res) => {
     const empty = []
     game.forEach(row =>{
         if(row.includes(0)){
@@ -39,7 +39,24 @@ const ai = (game) => {
     let index = empty[Math.floor(Math.random()*empty.length)]
     //console.log(index)
     game[index.vertical][index.diagonal] = Math.floor(Math.random()*2+1)
+    if(checkWinner(game)==true){
+        return true
+    }else{
+        return false
+    }
 }
+
+const checkWinner = (game) => {
+    let checker = false
+    for(let i =0; i<3; i++){
+        if((game[i][0] == 1 && game[i][1] == 1 && game[i][2] == 1) || (game[i][0] == 2 && game[i][1] == 2 && game[i][2] == 2)){checker = true}
+        if((game[0][i] == 1 && game[1][i] == 1 && game[2][i] == 1) || (game[0][i] == 2 && game[1][i] == 2 && game[2][i] == 2)){checker = true}
+    }
+    if((game[0][0] == 1 && game[1][1] == 1 && game[2][2] == 1) || (game[0][0] == 2 && game[1][1] == 2 && game[2][2] == 2)){checker = true}
+    if((game[0][2] == 1 && game[1][1] == 1 && game[0][2] == 1) || (game[0][2] == 2 && game[1][1] == 2 && game[2][0] == 2)){checker = true}
+    return checker
+}
+
 
 let games = {}
 app.get('/', function (req, res) {
@@ -52,7 +69,8 @@ app.get('/', function (req, res) {
 
 app.get('/:gameId', function (req, res, next) {
     let gameId = req.params.gameId
-    res.send(
+    res.send("")
+    /*res.send(
         `<form method="POST" action="">
             <div>Diagonal:</div>
             <input type="text" name="diagonal">
@@ -62,16 +80,66 @@ app.get('/:gameId', function (req, res, next) {
             <input type="text" name="value">
             <div><input type="submit"></div>
         </form>`
-    );
+    );*/
+})
+
+app.get('/lose', function (req, res){
+    res.send('You Lost!');
+})
+app.get('/won', function (req, res){
+    res.send('You won!');
 })
 
 app.post('/:gameId', function (req, res) {
+    //example posta => 
+    //curl -d "diagonal=0&vertical=0&value=2" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/b198beef-377e-4276-82f1-726bbb985a78
     let gameId = req.params.gameId
-    games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
-    ai(games[gameId])
-    printGame(games[gameId])
-    //res.send(JSON.stringify(req.body));
-    //jsonparser??????????????????????????
+    if(games[gameId][req.body.vertical][req.body.diagonal]==0){
+        games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
+        let checkai = ai(games[gameId], res)
+        printGame(games[gameId])
+        if(checkai==true){
+            res.redirect("/lose")
+            console.log("You won")
+        }else{
+            if(checkWinner(games[gameId])==true){
+                res.redirect("/won")
+                console.log("You won")
+            }else{
+                res.send("")
+            }
+        }
+    }else{
+        console.log("Pole już jest zajętę")
+    }
+})
+
+app.put('/:gameId', function (req, res) {
+    //example puta => 
+    //curl -d "diagonal=0&vertical=0&value=2" -H "Content-Type: application/x-www-form-urlencoded" -X PUT http://localhost:3000/53908693-2619-4be0-b679-502d6700a32f
+    let gameId = req.params.gameId
+    if(games[gameId][req.body.vertical][req.body.diagonal]!=0){
+        games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
+        printGame(games[gameId])
+        console.log("Wartość pola ",req.body.vertical,":",req.body.diagonal," jest zmieniona na ",req.body.value )
+    }else{
+        console.log("Pole jest równe 0")
+    }
+    res.send("")
+})
+
+app.delete('/:gameId', function (req, res) {
+    //example puta => 
+    //curl -d "diagonal=0&vertical=0" -H "Content-Type: application/x-www-form-urlencoded" -X PUT http://localhost:3000/53908693-2619-4be0-b679-502d6700a32f
+    let gameId = req.params.gameId
+    if(games[gameId][req.body.vertical][req.body.diagonal]!=0){
+        games[gameId][req.body.vertical][req.body.diagonal] = 0
+        printGame(games[gameId])
+        console.log("Pole",req.body.vertical,":",req.body.diagonal,"deleted.")
+    }else{
+        console.log("Pole jest równe 0")
+    }
+    res.send("")
 })
 
 
