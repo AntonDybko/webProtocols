@@ -122,11 +122,12 @@ app.post('/:gameId', function (req, res) {
                 res.redirect("/won")
                 console.log("You won")
             }else{
-                res.send("")
+                res.send(`${stringifyGame}`)
             }
         }
     }else{
         console.log("Pole już jest zajętę")
+        res.send("Pole już jest zajętę")
     }
 })
 
@@ -139,10 +140,11 @@ app.put('/:gameId', function (req, res) {
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
         printGame(games[gameId])
         console.log("Wartość pola ",req.body.vertical,":",req.body.diagonal," jest zmieniona na ",req.body.value )
+        res.send(`${stringifyGame}`)
     }else{
         console.log("Pole jest równe 0")
+        res.send("Pole jest równe 0")
     }
-    res.send("")
 })
 
 app.delete('/:gameId', function (req, res) {
@@ -154,13 +156,14 @@ app.delete('/:gameId', function (req, res) {
         games[gameId][req.body.vertical][req.body.diagonal] = 0
         printGame(games[gameId])
         console.log("Pole",req.body.vertical,":",req.body.diagonal,"deleted.")
+        res.send(`${stringifyGame}`)
     }else{
         console.log("Pole jest równe 0")
+        res.send("Pole jest równe 0")
     }
-    res.send("")
 })
 
 
 app.listen(/*3000*/8080, function () {
-    console.log('Example app listening on port 3000.');
+    console.log('Example app listening on port 8080.');
 });

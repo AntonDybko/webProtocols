@@ -35,7 +35,7 @@ var tnl = tunnel(config, function (error, server) {
         return getine[3]
     })
     .then((id) => {
-        console.log(id)
+        //console.log(id)
         axios.get(`http://localhost:3000/${id}`).then(res => {
             console.log(res.data)
             //res.array.forEach(el => console.log(el))
