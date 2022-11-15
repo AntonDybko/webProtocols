@@ -18,7 +18,7 @@ const printGame = (game) =>{
     console.log("-------------------")
     game.forEach(element => {
         console.log("| ",element[0]," | ", element[1]," | ", element[2]," | ")
-        result += ("| ",element[0]," | ", element[1]," | ", element[2]," | ")
+        //result += ("| ",element[0]," | ", element[1]," | ", element[2]," | ")
     });
     console.log("-------------------")
 
@@ -100,7 +100,7 @@ app.get('/won', function (req, res){
 
 app.post('/:gameId', function (req, res) {
     //example posta => 
-    //curl -d "diagonal=0&vertical=0&value=2" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/b198beef-377e-4276-82f1-726bbb985a78
+    //curl -d "diagonal=0&vertical=0&value=2" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/0055f2b1-a136-4c8f-bb72-db498423416c
     let gameId = req.params.gameId
     if(games[gameId][req.body.vertical][req.body.diagonal]==0){
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value

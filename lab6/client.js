@@ -22,6 +22,7 @@ var tnl = tunnel(config, function (error, server) {
         console.log(id)
         axios.get(`http://localhost:3000/${gameId}`).then(res => {
             console.log(res.data)
+            
             //console.log(id)
         })
     })
