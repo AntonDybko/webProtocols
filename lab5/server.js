@@ -79,7 +79,7 @@ app.get('/:gameId', function (req, res, next) {
     //let g = printGame(gameId)
     console.log(gameId)//test kropka???????????
     let realIdWithoutKROPKA = gameId.replace('.', '')
-    console.log(realId)
+    console.log(realIdWithoutKROPKA)
     console.log("separate game:" + games[realIdWithoutKROPKA])
     //games[gameId].forEach(el => console.log(el))
     //let stringifyGame = games[gameId].join(' ')
