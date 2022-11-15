@@ -77,10 +77,10 @@ app.get('/:gameId', function (req, res, next) {
     let gameId = req.params.gameId
     //res.send("")
     //let g = printGame(gameId)
-    console.log("gameid: " + gameId)
+    console.log(gameId)//test kropka???????????
     console.log(games)
     console.log("separate game:" + games[gameId])
-    games[gameId].forEach(el => console.log(el))
+    //games[gameId].forEach(el => console.log(el))
     //let stringifyGame = games[gameId].join(' ')
     res.send('')
     /*res.send(
@@ -107,6 +107,7 @@ app.post('/:gameId', function (req, res) {
     //example posta => 
     //curl -d "diagonal=0&vertical=0&value=2" -H "Content-Type: application/x-www-form-urlencoded" -X POST http://localhost:3000/0055f2b1-a136-4c8f-bb72-db498423416c
     let gameId = req.params.gameId
+    console.log(gameId)//test kropka???????????
     if(games[gameId][req.body.vertical][req.body.diagonal]==0){
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
         let checkai = ai(games[gameId], res)
@@ -131,6 +132,7 @@ app.put('/:gameId', function (req, res) {
     //example puta => 
     //curl -d "diagonal=0&vertical=0&value=2" -H "Content-Type: application/x-www-form-urlencoded" -X PUT http://localhost:3000/53908693-2619-4be0-b679-502d6700a32f
     let gameId = req.params.gameId
+    console.log(gameId)//test kropka???????????
     if(games[gameId][req.body.vertical][req.body.diagonal]!=0){
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
         printGame(games[gameId])
@@ -145,6 +147,7 @@ app.delete('/:gameId', function (req, res) {
     //example puta => 
     //curl -d "diagonal=0&vertical=0" -H "Content-Type: application/x-www-form-urlencoded" -X PUT http://localhost:3000/53908693-2619-4be0-b679-502d6700a32f
     let gameId = req.params.gameId
+    console.log(gameId) //test kropka???????????
     if(games[gameId][req.body.vertical][req.body.diagonal]!=0){
         games[gameId][req.body.vertical][req.body.diagonal] = 0
         printGame(games[gameId])
