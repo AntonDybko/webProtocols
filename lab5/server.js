@@ -23,7 +23,7 @@ const printGame = (game) =>{
     console.log("-------------------")
 
     result += "---------------"
-    return result
+    return result.trim()
 }
 
 const ai = (game, res) => {
