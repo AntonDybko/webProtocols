@@ -13,22 +13,28 @@ var config = {
     localPort: 3000
 };
 
-tunnel(config, function (error, server) {
+var tnl = tunnel(config, function (error, server) {
     const gameId = axios.get("http://localhost:3000/").then(res => {
         const getine = res.data.split(" ")
-        const id = getine[3]
-        return id
+        return getine[3]
     })
     .then((id) => {
         console.log(id)
-        axios.get(`http://localhost:3000/${id}`).then(res => {
+        axios.get(`http://localhost:3000/${gameId}`).then(res => {
             console.log(res.data)
             //console.log(id)
         })
     })
     
 
+    setTimeout(function(){
+        // you only need to close the tunnel by yourself if you set the
+        // keepAlive:true option in the configuration !
+        tnl.close();
+      },15000);
+
     /*axios.get(`http://localhost:3000/${gameId}`).then(function(res){
         console.log(res.data)
     })*/
 });
+
