@@ -10,7 +10,8 @@ var config = {
     dstHost:"sigma.ug.edu.pl",
     dstPort:8080,
     localHost:'127.0.0.1',
-    localPort: 3000
+    localPort: 3000,
+    keepAlive: true
 };
 
 const printGame = (game) =>{
@@ -30,28 +31,21 @@ const printGame = (game) =>{
 var tnl = tunnel(config, function (error, server) {
     const gameId = axios.get("http://localhost:3000/").then(res => {
         const getine = res.data.split(" ")
+        console.log("Your game url is: " + `http://localhost:3000/${getine[3]}`)
         return getine[3]
     })
-    gameId.then((id) => {
+    .then((id) => {
         console.log(id)
         axios.get(`http://localhost:3000/${id}`).then(res => {
             console.log(res.data)
-            const game = res.data.split(":")
-            console.log(id)
-            //printGame(game[1])
-            //console.log(id)
         })
+        //why undefined
     })
     
-
-    setTimeout(function(){
-        // you only need to close the tunnel by yourself if you set the
-        // keepAlive:true option in the configuration !
+    /*setTimeout(function(){
         tnl.close();
-      },15000);
+      },15000);*/
 
-    /*axios.get(`http://localhost:3000/${gameId}`).then(function(res){
-        console.log(res.data)
-    })*/
+
 });
 
