@@ -13,17 +13,17 @@ app.use(express.urlencoded());
 
 
 const printGame = (game) =>{
-    //let result = "-------------------"
+    let result = "-------------------"
 
     console.log("-------------------")
     game.forEach(element => {
         console.log("| ",element[0]," | ", element[1]," | ", element[2]," | ")
-        //result += ("| ",element[0]," | ", element[1]," | ", element[2]," | ")
+        result += ("| ",element[0]," | ", element[1]," | ", element[2]," | ")
     });
     console.log("-------------------")
 
-    //result += "-------------------"
-    //return result
+    result += "-------------------"
+    return result
 }
 
 const ai = (game, res) => {
@@ -78,13 +78,13 @@ app.get('/:gameId', function (req, res, next) {
     //res.send("")
     //let g = printGame(gameId)
     console.log(gameId)//test kropka???????????
-    console.log(games)
-    let realId = gameId.replace('.', '')
+    let realIdWithoutKROPKA = gameId.replace('.', '')
     console.log(realId)
-    console.log("separate game:" + games[realId])
+    console.log("separate game:" + games[realIdWithoutKROPKA])
     //games[gameId].forEach(el => console.log(el))
     //let stringifyGame = games[gameId].join(' ')
-    res.send('')
+    let stringifyGame = printGame(games[realIdWithoutKROPKA])
+    res.send(`Your game is ready : \n ${stringifyGame}`)
     /*res.send(
         `<form method="POST" action="">
             <div>Diagonal:</div>
