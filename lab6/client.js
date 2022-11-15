@@ -38,6 +38,7 @@ var tnl = tunnel(config, function (error, server) {
         console.log(id)
         axios.get(`http://localhost:3000/${id}`).then(res => {
             console.log(res.data)
+            //res.array.forEach(el => console.log(el))
         })
         //why undefined
     })
