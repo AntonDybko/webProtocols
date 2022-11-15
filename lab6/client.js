@@ -21,8 +21,8 @@ tunnel(config, function (error, server) {
     })
     .then((id) => {
         console.log(id)
-        axios.get(`http://localhost:3000/${id}`).then(res => {
-            console.log(res.data)
+        axios.get(`http://localhost:3000/${id}`).then(response => {
+            console.log(response.data)
         })
     })
     

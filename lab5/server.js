@@ -70,7 +70,7 @@ app.get('/', function (req, res) {
 app.get('/:gameId', function (req, res, next) {
     let gameId = req.params.gameId
     //res.send("")
-    res.send(games[idOfGame])
+    res.send(games[gameId])
     /*res.send(
         `<form method="POST" action="">
             <div>Diagonal:</div>
