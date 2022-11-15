@@ -77,6 +77,7 @@ app.get('/:gameId', function (req, res, next) {
     let gameId = req.params.gameId
     //res.send("")
     //let g = printGame(gameId)
+    console.log("gameid: " + gameId)
     console.log(games)
     console.log("separate game:" + games[gameId])
     games[gameId].forEach(el => console.log(el))
