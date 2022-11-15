@@ -77,8 +77,10 @@ app.get('/:gameId', function (req, res, next) {
     let gameId = req.params.gameId
     //res.send("")
     //let g = printGame(gameId)
-    let stringifyGame = games[gameId].join(' ')
-    res.send(stringifyGame)
+    console.log(games[gameId])
+    console.log(games)
+    //let stringifyGame = games[gameId].join(' ')
+    res.send('')
     /*res.send(
         `<form method="POST" action="">
             <div>Diagonal:</div>
