@@ -23,7 +23,7 @@ const printGame = (game) =>{
     console.log("-------------------")
 
     result += "---------------"
-    return result.trim()
+    return result
 }
 
 const ai = (game, res) => {
@@ -84,7 +84,7 @@ app.get('/:gameId', function (req, res, next) {
     //games[gameId].forEach(el => console.log(el))
     //let stringifyGame = games[gameId].join(' ')
     let stringifyGame = printGame(games[realIdWithoutKROPKA])
-    res.send(`Your game is ready : \n ${stringifyGame}`)
+    res.send(`Your game is ready : \n${stringifyGame}`)
     /*res.send(
         `<form method="POST" action="">
             <div>Diagonal:</div>
