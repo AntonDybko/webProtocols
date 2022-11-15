@@ -18,12 +18,12 @@ const printGame = (game) =>{
     console.log("-------------------")
     game.forEach(element => {
         console.log("| ",element[0]," | ", element[1]," | ", element[2]," | ")
-        result += ` | ${element[0]} |  ${element[1]} |  ${element[2]} |\n`
+        result += `| ${element[0]} |  ${element[1]} |  ${element[2]} |\n`
     });
     console.log("-------------------")
 
-    result += " ---------------"
-    return result
+    result += "---------------"
+    return result.trim()
 }
 
 const ai = (game, res) => {
