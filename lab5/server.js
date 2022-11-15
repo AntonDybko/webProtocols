@@ -13,16 +13,16 @@ app.use(express.urlencoded());
 
 
 const printGame = (game) =>{
-    let result = "-------------------\n"
+    let result = " ---------------\n"
 
     console.log("-------------------")
     game.forEach(element => {
         console.log("| ",element[0]," | ", element[1]," | ", element[2]," | ")
-        result += `| ${element[0]} |  ${element[1]} |  ${element[2]} |\n`
+        result += ` | ${element[0]} |  ${element[1]} |  ${element[2]} |\n`
     });
     console.log("-------------------")
 
-    result += "-------------------"
+    result += " ---------------"
     return result
 }
 
