@@ -13,11 +13,17 @@ app.use(express.urlencoded());
 
 
 const printGame = (game) =>{
+    let result = "-------------------"
+
     console.log("-------------------")
     game.forEach(element => {
         console.log("| ",element[0]," | ", element[1]," | ", element[2]," | ")
+        result += ("| ",element[0]," | ", element[1]," | ", element[2]," | ")
     });
     console.log("-------------------")
+
+    result += "-------------------"
+    return result
 }
 
 const ai = (game, res) => {
