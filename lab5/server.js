@@ -117,9 +117,21 @@ app.post('/:gameId', function (req, res) {
     //console.log(req.body.value)
     if(games[gameId][req.body.vertical][req.body.diagonal]==0){
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
-        let checkai = ai(games[gameId], res)
+        //let checkai = ai(games[gameId], res)
         printGame(games[gameId])
-        if(checkai==true){
+        if(checkWinner(games[gameId])==true){
+            res.redirect("You won")
+            console.log("You won")
+        }else{
+            let checkai = ai(games[gameId], res)
+            if(checkai==true){
+                res.send("You lost")
+                console.log("You won")
+            }else{
+                res.send(`${printGame(games[gameId])}`)
+            }
+        }
+        /*if(checkai==true){
             res.send("You lost")
             console.log("You won")
         }else{
@@ -129,7 +141,7 @@ app.post('/:gameId', function (req, res) {
             }else{
                 res.send(`${printGame(games[gameId])}`)
             }
-        }
+        }*/
     }else{
         console.log("Pole już jest zajętę")
         res.send("Pole już jest zajętę")
