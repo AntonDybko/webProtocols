@@ -127,7 +127,7 @@ app.post('/:gameId', function (req, res) {
                 res.redirect("/won")
                 console.log("You won")
             }else{
-                res.send(`${stringifyGame}`)
+                res.send(`${printGame(games[gameId])}`)
             }
         }
     }else{
@@ -145,7 +145,7 @@ app.put('/:gameId', function (req, res) {
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
         printGame(games[gameId])
         console.log("Wartość pola ",req.body.vertical,":",req.body.diagonal," jest zmieniona na ",req.body.value )
-        res.send(`${stringifyGame}`)
+        res.send(`${printGame(games[gameId])}`)
     }else{
         console.log("Pole jest równe 0")
         res.send("Pole jest równe 0")
@@ -161,7 +161,7 @@ app.delete('/:gameId', function (req, res) {
         games[gameId][req.body.vertical][req.body.diagonal] = 0
         printGame(games[gameId])
         console.log("Pole",req.body.vertical,":",req.body.diagonal,"deleted.")
-        res.send(`${stringifyGame}`)
+        res.send(`${printGame(games[gameId])}`)
     }else{
         console.log("Pole jest równe 0")
         res.send("Pole jest równe 0")
