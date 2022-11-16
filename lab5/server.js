@@ -9,7 +9,8 @@ app.use(bodyParser.json());
 /*app.use(bodyParser.urlencoded({     
     extended: false
 })); */
-app.use(express.urlencoded());
+//app.use(express.urlencoded());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 
 const printGame = (game) =>{
