@@ -118,12 +118,12 @@ app.post('/:gameId', function (req, res) {
     if(games[gameId][req.body.vertical][req.body.diagonal]==0){
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
         //let checkai = ai(games[gameId], res)
-        printGame(games[gameId])
         if(checkWinner(games[gameId])==true){
             res.send("You won")
             console.log("You won")
         }else{
             let checkai = ai(games[gameId], res)
+            printGame(games[gameId])
             if(checkai==true){
                 res.send("You lost")
                 console.log("You lost")
