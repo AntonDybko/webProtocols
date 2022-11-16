@@ -112,6 +112,9 @@ app.post('/:gameId', function (req, res) {
     let gameId = req.params.gameId
     console.log(gameId)//test kropka???????????
     console.log(req.body)
+    console.log(req.body.diagonal)
+    console.log(req.body.vertical)
+    console.log(req.body.value)
     if(games[gameId][req.body.vertical][req.body.diagonal]==0){
         games[gameId][req.body.vertical][req.body.diagonal] = req.body.value
         let checkai = ai(games[gameId], res)
