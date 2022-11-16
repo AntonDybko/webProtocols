@@ -120,13 +120,13 @@ app.post('/:gameId', function (req, res) {
         //let checkai = ai(games[gameId], res)
         printGame(games[gameId])
         if(checkWinner(games[gameId])==true){
-            res.redirect("You won")
+            res.send("You won")
             console.log("You won")
         }else{
             let checkai = ai(games[gameId], res)
             if(checkai==true){
                 res.send("You lost")
-                console.log("You won")
+                console.log("You lost")
             }else{
                 res.send(`${printGame(games[gameId])}`)
             }
