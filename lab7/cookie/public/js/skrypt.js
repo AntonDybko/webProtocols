@@ -5,8 +5,8 @@ window.addEventListener("load", function (event) {
 });
 
 function sendData(name, value){
-    Cookies.set(name, value)
-    alert(name, value)
+    Cookies.set(name, value, 7)
+    alert(`${name}, ${value}`)
 }
 
 

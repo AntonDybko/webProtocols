@@ -1,6 +1,12 @@
 //var tunnel = require('tunel-ssh');
 import tunnel from "tunnel-ssh" 
 import axios from "axios"
+import express from "express"
+import * as readline from "readline"
+import bodyParser from 'body-parser';
+
+var rl = readline.createInterface(
+    process.stdin, process.stdout);
 
 var config = {
     username:'adybko',
@@ -14,21 +20,11 @@ var config = {
     keepAlive: true
 };
 
-const printGame = (game) =>{
-    //let result = "-------------------"
+var app = express();
+app.use(bodyParser.json());
 
-    console.log("-------------------")
-    Array.from(game).forEach(element => {
-        console.log("| ",element[0]," | ", element[1]," | ", element[2]," | ")
-        //result += ("| ",element[0]," | ", element[1]," | ", element[2]," | ")
-    });
-    console.log("-------------------")
 
-    //result += "-------------------"
-    //return result
-}
-
-var tnl = tunnel(config, function (error, server) {
+const tnl = tunnel(config, function (error, server) {
     const gameId = axios.get("http://localhost:3000/").then(res => {
         const getine = res.data.split(" ")
         console.log("Your game url is: " + `http://localhost:3000/${getine[3]}`)
@@ -38,10 +34,33 @@ var tnl = tunnel(config, function (error, server) {
         //console.log(id)
         axios.get(`http://localhost:3000/${id}`).then(res => {
             console.log(res.data)
-            //res.array.forEach(el => console.log(el))
+        }).then(()=>{
+            const turn = () => {
+                rl.question("Your turn:\ndiagonal:", (diagonal)=>{
+                    rl.question("vertical:", (vertical)=>{
+                        rl.question("value:", (value)=>{
+                            axios.post(`http://localhost:3000/${id}`,{
+                                diagonal: diagonal,
+                                vertical: vertical,
+                                value: value
+                            }).then((res) =>{
+                                console.log(res.data)
+                                if(res.data == "You won" || res.data == "You lost"){
+                                    //console.log(res.data)
+                                    tnl.close()
+                                }else {
+                                    turn()
+                                }
+                            })
+                        })
+                    })
+                })
+            }
+            turn()
         })
         //why undefined
     })
+
     
     /*setTimeout(function(){
         tnl.close();
