@@ -1,6 +1,6 @@
 const mqtt = require('mqtt')
 
-const sypialnia  = mqtt.connect('mqtt://localhost:1883/')
+const sypialnia  = mqtt.connect('mqtt://test.mosquitto.org')
 
 sypialnia.on('connect', function () {
     setInterval(()=>{
