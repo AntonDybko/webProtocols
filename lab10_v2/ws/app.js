@@ -1,11 +1,7 @@
 'use strict';
 const connect = require("connect");
-//const app = connect();
-var app = express();
-app.use(bodyParser.json());
-
+const app = connect();
 const serveStatic = require('serve-static');
-const express = require('express')
 
 const httpServer = require("http").createServer(app);
 
@@ -28,7 +24,30 @@ io.of("/").adapter.on("leave-room", (room, id) => {
     console.log(`socket ${id} has left room ${room}`);
 });
 
-io.on("connection", function(socket){
+io.sockets.on("connection", function(socket){
+    //socket.on("roomManage", )
+    //socket.to(array).emit("Creat or join room.")
+    socket.on("roomManage", arr => {
+        //console.log(arr)// test1
+        socket.join(arr[1])
+        socket.to(arr[1]).emit("Create", arr)
+        this.username = arr[0]
+        users.push({
+            socketId: socket.id,
+            userName: arr[0]
+        })
+        //console.log(users) //test2
+        users.push({
+            author:{
+                socketId: socket.id,
+                userName: arr[0]
+            },
+            roomName: arr[1]
+        })
+        //console.log(rooms) //test3
+    })
+})
+/*io.on("connection", function(socket){
     socket.on('user_join', (name) => {
         this.username = name
         users.push({
@@ -38,7 +57,7 @@ io.on("connection", function(socket){
         socket.emit('user_join', name);
         console.log(users)
     })
-})
+})*/
 
 /*app.get('/', function(req, res){
     let dane = req.body.split(',')
