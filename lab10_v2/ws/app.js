@@ -9,10 +9,11 @@ const io = require("socket.io")(httpServer);
 
 app.use(serveStatic("public"));
 
-const rooms = io.of("/").adapter.rooms;
-const sids = io.of("/").adapter.sids;
+//const rooms = io.of("/").adapter.rooms;
+//const sids = io.of("/").adapter.sids;
 
 const users = [];
+const chatRooms = []
 
 io.of("/").adapter.on("create-room", (room) => {
     console.log(`room ${room} was created`);
@@ -24,45 +25,44 @@ io.of("/").adapter.on("leave-room", (room, id) => {
     console.log(`socket ${id} has left room ${room}`);
 });
 
-io.sockets.on("connection", function(socket){
-    //socket.on("roomManage", )
-    //socket.to(array).emit("Creat or join room.")
+io.on("connection", function(socket){
+    socket.emit("loaded", chatRooms)
     socket.on("roomManage", arr => {
-        //console.log(arr)// test1
         socket.join(arr[1])
-        socket.to(arr[1]).emit("Create", arr)
         this.username = arr[0]
         users.push({
             socketId: socket.id,
             userName: arr[0]
         })
-        //console.log(users) //test2
-        users.push({
-            author:{
-                socketId: socket.id,
-                userName: arr[0]
-            },
-            roomName: arr[1]
-        })
-        //console.log(rooms) //test3
+        chatRooms.push(arr[1])
+        io.to(arr[1]).emit("create", arr)
     })
+    socket.on("joinChat", chatname => {
+        socket.join(chatname)
+        //console.log(users.filter(u => u.socketId == socket.id))
+        //let user = (users.filter(u => u.socketId == socket.id)).userName
+        socket.to(chatname).emit("twits", [chatname, `(${socket.id} joined room.)`])
+    })
+    socket.on("leaveChat", async chatname => {
+        //const sockets = await io.in(chatname).fetchSockets()
+        //console.log(sockets.length)
+        //console.log(users.filter(u => u.socketId == socket.id))
+        //let user = (users.filter(u => u.socketId == socket.id)).userName
+        socket.leave(chatname)
+        socket.to(chatname).emit("twits", [chatname, `(${socket.id} left room.)`])
+        const sockets = await io.in(chatname).fetchSockets()
+        console.log(sockets.length)
+        if(sockets.length ==0){
+            io.sockets.emit("deleteChat", chatname)
+            chatRooms.pop(chatname)
+        }
+    })
+    socket.on("twit", twit_chat => {
+        io.to(twit_chat[1]).emit("twits", [twit_chat[1], `(${twit_chat[0]})`])
+    })
+    
 })
-/*io.on("connection", function(socket){
-    socket.on('user_join', (name) => {
-        this.username = name
-        users.push({
-            socketId: socket.id,
-            userName: name
-        })
-        socket.emit('user_join', name);
-        console.log(users)
-    })
-})*/
 
-/*app.get('/', function(req, res){
-    let dane = req.body.split(',')
-    io.on
-})*/
-httpServer.listen(3000, function () {
+httpServer.listen(3001, function () {
  console.log('Serwer HTTP działa na pocie 3000');
 });

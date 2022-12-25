@@ -1,50 +1,48 @@
+//const express = require('express');
 
-//socket = io.connect('http://' + location.host);
-//var socket = io.connect()
+//var app = express()
+//app.use(bodyParser.json());
 
-
-//var socket = io.connect(`http://localhost:3000/`)
-//const username = prompt("Please enter a username: ", "");
-
-//const chats = []
-let chats = document.getElementById("chats");
-
-window.addEventListener("load", function (event) {
-  /*const socket = io.connect(`http://localhost:3000/`)
-  const username = prompt("Please enter a username: ", "");
-
-  socket.on("Create", arr => {
-    console.log(arr[1])
-    console.log(arr[0])
-  })*/
-  socket.on("Create", arr => {
-    console.log("Strona clienta")
-    //chats.push(arr[1])
-    let li = document.createElement("li");
-    li.innerText = arr[1];
-    chats.appendChild(li);
-  
-    console.log(`client chats: ${chats}`)
-  })
-
-});
-
-
-const socket = io.connect(`http://localhost:3000/`)
+const socket = io.connect(`http://localhost:3001/`)
 const username = prompt("Please enter a username: ", "");
 
-/*socket.on("Create", arr => {
-  console.log(arr[0])
-  //chats.push(arr[1])
-  let li = document.createElement("li");
-  li.innerText = arr[1];
-  chats.appendChild(li);
+window.addEventListener("load", function (event) {
+});
 
-  console.log(`client chats: ${chats}`)
-})*/
-function createChat (chatname){
+function createChat (chatname, chats){
   socket.emit("roomManage",[username, chatname])
+  let li = document.createElement("li");
+  li.id = chatname
+  li.innerText = chatname;
+  chats.appendChild(li);
+  
+  let leavebutton = document.createElement("button");
+  leavebutton.innerHTML = "Leave";
+  leavebutton.onclick = function(){
+    li.removeChild(leavebutton)
+    let joinbutton = document.createElement("button");
+    joinbutton.innerHTML = "Join";
+    joinbutton.onclick = function(){
+      li.removeChild(joinbutton)
+      /*leavebutton = document.createElement("button");
+      leavebutton.innerHTML = "Join";
+      leavebutton.onclick = function(){socket.emit("joinChat", chatname)}*/
+      li.appendChild(leavebutton);
+      socket.emit("joinChat", chatname)
+    }
+    li.appendChild(joinbutton);
+    socket.emit("leaveChat", chatname)
+  }
+  li.appendChild(leavebutton);
+};
+
+function sendTwit (twit, chatname) {
+  socket.emit("twit", [twit, chatname])
 }
+
+
+
+
 
 
 
