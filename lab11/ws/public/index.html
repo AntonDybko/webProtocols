@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/styl.css" />
   <script src="js/jquery.min.js"></script>
   <script src="js/skrypt.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.2/mqttws31.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.0.1/mqtt.min.js" type="text/javascript"></script>
 </head>
 
 </head>
@@ -29,82 +29,102 @@
   <div id="twits"></div>
   <script>
 
-    const clientIndexId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
-
-    //const host = 'ws://broker.emqx.io:8083/mqtt'
-    //const host = 'localhost'
-    const host = '89.64.100.44'
-
-    client = new Paho.MQTT.Client(host, 1883, clientIndexId);
-    client.connect({onSuccess:onConnect});
-    function onConnect(){
-      console.log('yeah nice')
+    const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+    const host = 'ws://broker.emqx.io:8083/mqtt'
+    const options = {
+      keepalive: 60,
+      clientId: clientId,
+      protocolId: 'MQTT',
+      protocolVersion: 4,
+      clean: true,
+      reconnectPeriod: 1000,
+      connectTimeout: 30 * 1000,
+      will: {
+        topic: 'WillMsg',
+        payload: 'Connection Closed abnormally..!',
+        qos: 0,
+        retain: false
+      },
     }
+    console.log('Connecting mqtt client')
+    const client = mqtt.connect(host, options)
 
-    client.onMessageArrived = function (message) {
-      if(message.destinationName==='loaded'){
+    client.on('message', (topic, string) => {
+      if(topic.toString()==='loaded'){
+        console.log("loaded")
+        //client.unsubscribe('loaded')
+        const chats=string.toString().split('|')
         const rooms = document.getElementById('chats')
-        chats.forEach(chatname => {
-          let li = document.createElement("li");
-          li.innerText = chatname;
-          li.id = chatname
-          rooms.appendChild(li);
-  
-          let joinbutton = document.createElement("button");
-          joinbutton.innerHTML = "Join";
-          joinbutton.onclick = function(){
-            li.removeChild(joinbutton)
-            let leavebutton = document.createElement("button");
-            leavebutton.innerHTML = "Leave";
-            leavebutton.onclick = function(){
-              li.removeChild(leavebutton)
-              li.appendChild(joinbutton);
-              client.publish("leaveChat", chatname)
-            }
-            li.appendChild(leavebutton);
-            client.publish("joinChat", chatname)
-          }
-          li.appendChild(joinbutton);
-        })
-      }
-    }
-    /*client.on('loaded', chats => {
-      const rooms = document.getElementById('chats')
-      chats.forEach(chatname => {
-        let li = document.createElement("li");
-        li.innerText = chatname;
-        li.id = chatname
-        rooms.appendChild(li);
-
-        let joinbutton = document.createElement("button");
-        joinbutton.innerHTML = "Join";
-        joinbutton.onclick = function(){
-          li.removeChild(joinbutton)
-          let leavebutton = document.createElement("button");
-          leavebutton.innerHTML = "Leave";
-          leavebutton.onclick = function(){
-            li.removeChild(leavebutton)
-            li.appendChild(joinbutton);
-            client.publish("leaveChat", chatname)
-          }
-          li.appendChild(leavebutton);
-          client.publish("joinChat", chatname)
+        //list of ids
+        const lis = rooms.getElementsByTagName('li');
+        const idArray = [];
+        for ( let counter = 0; counter < lis.length; counter++){
+          idArray.push( lis[counter].id );
         }
-        li.appendChild(joinbutton);
-      })
-      
-      let twits = document.getElementById("twits")
-      client.on("twits", twit => {
+        //if
+        if(chats[0] != ''){
+          chats.forEach(chatname => {
+            if(idArray.filter(id => id == chatname).length == 0){
+            //if($('#ulId').find('#1').length = 0){
+              let li = document.createElement("li");
+              li.innerText = chatname;
+              li.id = chatname
+              rooms.appendChild(li);
+
+              let joinbutton = document.createElement("button");
+              joinbutton.innerHTML = "Join";
+              joinbutton.onclick = function(){
+                li.removeChild(joinbutton)
+                let leavebutton = document.createElement("button");
+                leavebutton.innerHTML = "Leave";
+                leavebutton.onclick = function(){
+                  li.removeChild(leavebutton)
+                  li.appendChild(joinbutton);
+                  client.publish('twits', `${chatname}|${clientId}|${username} left ${chatname}`)
+                  client.publish("leaveChat", `${chatname}|${clientId}`)
+                  client.unsubscribe(chatname)
+                  //client.unsubscribe(chatname)
+                }
+                li.appendChild(leavebutton);
+                client.publish("joinChat", `${chatname}|${clientId}`)
+                client.publish('twits', `${chatname}|${clientId}|${username} joined ${chatname}`)
+                client.subscribe(chatname)
+              }
+              li.appendChild(joinbutton);
+            }
+          })
+        
+        }
+      }
+      else {
+        if(topic.toString()==='deleteChat'){
+          let child = document.getElementById(string)
+          rooms.removeChild(child)
+        }else{
+          console.log("checkedTwit")
+          const chat_id_twit = string.toString().split('|')
+          let twits = document.getElementById("twits")
+          let div = document.createElement("div");
+          div.innerText = `${chat_id_twit[1]}: ${chat_id_twit[2]}`;
+          if(chat_id_twit[2] != undefined){
+            twits.appendChild(div)
+          }
+          //}
+
+        }
+    }
+      //let twits = document.getElementById("twits")
+      /*client.on("twits", twit => {
         let div = document.createElement("div");
         div.innerText = twit;
         twits.appendChild(div)
-      })
+      })*/
 
-      client.on("deleteChat", chatname => {
+      /*client.on("deleteChat", chatname => {
         let child = document.getElementById(chatname)
         rooms.removeChild(child)
-      })
-    });*/
+      })*/
+    });
   </script>
 </body>
 
