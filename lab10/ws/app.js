@@ -27,38 +27,45 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 
 io.on("connection", function(socket){
     socket.emit("loaded", chatRooms)
-    socket.on("roomManage", arr => {
-        socket.join(arr[1])
-        this.username = arr[0]
+    socket.on("load", username => {
         users.push({
             socketId: socket.id,
-            userName: arr[0]
+            userName: username
         })
+    })
+    socket.on("roomManage", arr => {
+        socket.join(arr[1])
         chatRooms.push(arr[1])
         io.to(arr[1]).emit("create", arr)
     })
     socket.on("joinChat", chatname => {
         socket.join(chatname)
-        //console.log(users.filter(u => u.socketId == socket.id))
-        //let user = (users.filter(u => u.socketId == socket.id)).userName
-        socket.to(chatname).emit("twits", [chatname, `(${socket.id} joined room.)`])
+        let name = users.filter(u => u.socketId == socket.id)[0].userName
+        socket.to(chatname).emit("twits", [chatname, `(${name} joined room.)`])
     })
     socket.on("leaveChat", async chatname => {
-        //const sockets = await io.in(chatname).fetchSockets()
-        //console.log(sockets.length)
-        //console.log(users.filter(u => u.socketId == socket.id))
-        //let user = (users.filter(u => u.socketId == socket.id)).userName
+        let name = users.filter(u => u.socketId == socket.id)[0].userName
         socket.leave(chatname)
-        socket.to(chatname).emit("twits", [chatname, `(${socket.id} left room.)`])
+        socket.to(chatname).emit("twits", [chatname, `(${name} left room.)`])
         const sockets = await io.in(chatname).fetchSockets()
-        console.log(sockets.length)
         if(sockets.length ==0){
             io.sockets.emit("deleteChat", chatname)
             chatRooms.pop(chatname)
         }
     })
+    socket.on('disconnect', function(){
+        let name = users.filter(u => u.socketId == socket.id)[0].userName
+        socket.leave(chatname)
+        socket.to(chatname).emit("twits", [chatname, `(${name} left room.)`])
+        const sockets = await io.in(chatname).fetchSockets()
+        if(sockets.length ==0){
+            io.sockets.emit("deleteChat", chatname)
+            chatRooms.pop(chatname)
+        }
+    });
     socket.on("twit", twit_chat => {
-        io.to(twit_chat[1]).emit("twits", [twit_chat[1], `(${twit_chat[0]})`])
+        let name = users.filter(u => u.socketId == socket.id)[0].userName
+        io.to(twit_chat[1]).emit("twits", [twit_chat[1], `(${name}: ${twit_chat[0]})`])
     })
     
 })

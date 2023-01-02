@@ -1,16 +1,30 @@
-//const express = require('express');
 
-//var app = express()
-//app.use(bodyParser.json());
+/*const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
 
-const socket = io.connect(`http://localhost:3001/`)
+const host = 'ws://broker.emqx.io:8083/mqtt'
+
+const options = {
+  keepalive: 60,
+  clientId: clientId,
+  protocolId: 'MQTT',
+  protocolVersion: 4,
+  clean: true,
+  reconnectPeriod: 1000,
+  connectTimeout: 30 * 1000,
+  will: {
+    topic: 'WillMsg',
+    payload: 'Connection Closed abnormally..!',
+    qos: 0,
+    retain: false
+  },
+}
+
+console.log('Connecting mqtt client')
+const client = mqtt.connect(host, options)*/
 const username = prompt("Please enter a username: ", "");
 
-window.addEventListener("load", function (event) {
-});
-
 function createChat (chatname, chats){
-  socket.emit("roomManage",[username, chatname])
+  client.publish("roomManage",[username, chatname])
   let li = document.createElement("li");
   li.id = chatname
   li.innerText = chatname;
@@ -24,20 +38,17 @@ function createChat (chatname, chats){
     joinbutton.innerHTML = "Join";
     joinbutton.onclick = function(){
       li.removeChild(joinbutton)
-      /*leavebutton = document.createElement("button");
-      leavebutton.innerHTML = "Join";
-      leavebutton.onclick = function(){socket.emit("joinChat", chatname)}*/
       li.appendChild(leavebutton);
       socket.emit("joinChat", chatname)
     }
     li.appendChild(joinbutton);
-    socket.emit("leaveChat", chatname)
+    client.publish("leaveChat", chatname)
   }
   li.appendChild(leavebutton);
 };
 
 function sendTwit (twit, chatname) {
-  socket.emit("twit", [twit, chatname])
+  client.publish("twit", [twit, chatname])
 }
 
 

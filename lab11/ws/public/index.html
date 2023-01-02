@@ -6,8 +6,10 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="css/styl.css" />
   <script src="js/jquery.min.js"></script>
-  <script src="js/socket.io/socket.io.js"></script>
   <script src="js/skrypt.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.2/mqttws31.min.js" type="text/javascript"></script>
+</head>
+
 </head>
 
 <body>
@@ -26,7 +28,47 @@
   <h3>Twits</h3>
   <div id="twits"></div>
   <script>
-    socket.on('loaded', chats => {
+
+    const clientIndexId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+
+    //const host = 'ws://broker.emqx.io:8083/mqtt'
+    //const host = 'localhost'
+    const host = '89.64.100.44'
+
+    client = new Paho.MQTT.Client(host, 1883, clientIndexId);
+    client.connect({onSuccess:onConnect});
+    function onConnect(){
+      console.log('yeah nice')
+    }
+
+    client.onMessageArrived = function (message) {
+      if(message.destinationName==='loaded'){
+        const rooms = document.getElementById('chats')
+        chats.forEach(chatname => {
+          let li = document.createElement("li");
+          li.innerText = chatname;
+          li.id = chatname
+          rooms.appendChild(li);
+  
+          let joinbutton = document.createElement("button");
+          joinbutton.innerHTML = "Join";
+          joinbutton.onclick = function(){
+            li.removeChild(joinbutton)
+            let leavebutton = document.createElement("button");
+            leavebutton.innerHTML = "Leave";
+            leavebutton.onclick = function(){
+              li.removeChild(leavebutton)
+              li.appendChild(joinbutton);
+              client.publish("leaveChat", chatname)
+            }
+            li.appendChild(leavebutton);
+            client.publish("joinChat", chatname)
+          }
+          li.appendChild(joinbutton);
+        })
+      }
+    }
+    /*client.on('loaded', chats => {
       const rooms = document.getElementById('chats')
       chats.forEach(chatname => {
         let li = document.createElement("li");
@@ -36,38 +78,33 @@
 
         let joinbutton = document.createElement("button");
         joinbutton.innerHTML = "Join";
-        //joinbutton.onclick = function(){socket.emit("joinChat", chatname)}
         joinbutton.onclick = function(){
           li.removeChild(joinbutton)
           let leavebutton = document.createElement("button");
           leavebutton.innerHTML = "Leave";
           leavebutton.onclick = function(){
             li.removeChild(leavebutton)
-            /*let joinbutton = document.createElement("button");
-            joinbutton.innerHTML = "Join";
-            joinbutton.onclick = function(){socket.emit("joinChat", chatname)}*/
             li.appendChild(joinbutton);
-            socket.emit("leaveChat", chatname)
+            client.publish("leaveChat", chatname)
           }
           li.appendChild(leavebutton);
-          socket.emit("joinChat", chatname)
+          client.publish("joinChat", chatname)
         }
         li.appendChild(joinbutton);
       })
       
       let twits = document.getElementById("twits")
-      socket.on("twits", twit => {
+      client.on("twits", twit => {
         let div = document.createElement("div");
         div.innerText = twit;
         twits.appendChild(div)
-        //console.log(twit)
       })
 
-      socket.on("deleteChat", chatname => {
+      client.on("deleteChat", chatname => {
         let child = document.getElementById(chatname)
         rooms.removeChild(child)
       })
-    });
+    });*/
   </script>
 </body>
 
