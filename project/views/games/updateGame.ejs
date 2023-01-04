@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Node Authentication</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <style>
+            body        { padding-top:80px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <form action="/updateGame/<%= game._id%>" method="post">
+                    <h1><span class="fa"></span><%= game.name%></h1>
+                    <div>
+                        <h3>Author:</h3>
+                        <div class="form-control"><%= game.author%></div>
+                        <input type="text" class="form-control" name="author" value="<%= game.author%>">
+                    </div>
+                    <hr>
+                    <div>
+                        <h3>Description:</h3>
+                        <div class="form-control"><%= game.description%></div>
+                        <input type="text" class="form-control" name="description" value="<%= game.description%>">
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-lg">Update game</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

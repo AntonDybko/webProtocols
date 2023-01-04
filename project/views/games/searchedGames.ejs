@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Node Authentication</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <style>
+            body        { padding-top:80px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <h1><span class="fa"></span>Games</h1>
+                <ul>
+                    <%games.forEach( game => {%>
+                        <li>
+                            <a href="/<%= game._id%>" class="btn btn-default">
+                                <%= game.name%>
+                            </a>
+                            <% if(user.role === 'ADMIN') { %>
+                                <a href="/updateGame/<%= game._id%>" class="btn btn-default">
+                                    <span class="fa"></span>
+                                    update game
+                                </a>
+                                <a href="/deleteGame/<%= game._id%>" class="btn btn-default">
+                                    <span class="fa"></span>
+                                    delete game
+                                </a>
+                            <% } %>
+                        </li>
+                    <%})%>
+                </ul>
+
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Library</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script
+            src="https://code.jquery.com/jquery-3.6.3.js"
+            integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
+            crossorigin="anonymous">
+        </script>
+        <style>
+            body        { padding-top:80px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <h1><span class="fa"></span>Games</h1>
+                <ul>
+                    <%yourGames.forEach( game => {%>
+                        <%console.log(game)%>
+                        <li>
+                            <span><%= game.name%></span>
+                            <a href="/removeFromLibrary/<%= game._id%>" class="btn btn-default">
+                                <span class="fa"></span>
+                                remove from library
+                            </a>
+                            <button id="description_button:<%= game._id%>" onclick="loadGame('<%= game._id%>', '<%= game.name%>', '<%= game.author%>', '<%= game.date%>', '<%= game.description%>')">See more...</button>
+                            <div id="div:<%= game._id%>"></div>
+                        </li>
+                    <%})%>
+                </ul>
+
+            </div>
+        </div>
+    </body>
+    <script>
+        function loadGame(id, name, author, date, description){
+            let shownGame = document.getElementById(`div:${id}`) //main div
+            console.log('fisting')
+            let namediv = document.createElement("div");
+            let authordiv = document.createElement("div");
+            let datediv = document.createElement("div");
+            let descriptiondiv = document.createElement("div");
+
+            namediv.innerHTML = name
+            authordiv.innerHTML = author
+            datediv.innerHTML = date
+            descriptiondiv.innerHTML = description
+            shownGame.appendChild(namediv)
+            shownGame.appendChild(authordiv)
+            shownGame.appendChild(datediv)
+            shownGame.appendChild(descriptiondiv)
+
+            let button = document.getElementById(`description_button:${id}`)
+            button.innerHTML = 'Hide...'
+            button.onclick = function(){
+                shownGame.removeChild(namediv)
+                shownGame.removeChild(authordiv)
+                shownGame.removeChild(datediv)
+                shownGame.removeChild(descriptiondiv)
+                button.innerHTML = 'See more...'
+                button.onclick = function(){
+                    loadGame(id, name, author, date, description)
+                }
+            }
+
+        }
+
+    </script>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+    <title>Main menu</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    <style>
+        body        { padding-top:80px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron text-center">
+        <h1><span class="fa fa-lock"></span>Store</h1>
+        <a href="/library" class="btn btn-default"><span class="fa fa-user"></span>LIBRARY</a>
+        <a href="/chat" class="btn btn-default"><span class="fa fa-user"></span>CHAT</a>
+
+        <% //const user = await User.findOne({ user: req.params.id }).lean(); %>
+        <% if(user.role === 'ADMIN') { %>
+            <ul>
+                <li class="nav-item">
+                    <a href="/manageUsers" class="manageUsers" role="button">manageUsers</a>
+                    <a href="/manageGames" class="manageUsers" role="button">manageGames</a>
+                </li>
+            </ul>
+        <% } %>
+    </div>
+    <hr>
+    <div class="container">
+        <div class="col-sm-6 col-sm-offset-3">
+            <h1><span class="fa"></span>Games</h1>
+            <div>
+                <form action="/searchByName" method="post">
+                    <input type="text" class="form-control" name="name">
+                    <button type="submit" class="btn btn-warning btn-lg">Search</button>
+                </form>
+            </div>
+            <hr>
+            <ul>
+                <%gamesList.forEach( game => {%>
+                    <li>
+                        <a href="/gameInfo/<%= game._id%>" class="btn btn-default">
+                            <%= game.name%>
+                        </a>
+                    </li>
+                <%})%>
+            </ul>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
