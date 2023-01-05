@@ -6,7 +6,8 @@ var bcrypt   = require('bcryptjs');
 const ROLES = {
     ADMIN: "ADMIN",
     MODERATOR: 'MODERATOR',
-    BASIC: "BASIC"
+    BASIC: "BASIC",
+    MUTED: "MUTED"
 }
 // define the schema for our user model
 var userSchema = mongoose.Schema({

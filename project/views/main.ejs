@@ -16,13 +16,11 @@
         <a href="/chat" class="btn btn-default"><span class="fa fa-user"></span>CHAT</a>
 
         <% //const user = await User.findOne({ user: req.params.id }).lean(); %>
+        <% if(user.role === 'MODERATOR' || user.role === 'ADMIN') { %>
+            <div><a href="/manageUsers" class="manageUsers" role="button">manageUsers</a></div>
+        <% } %>
         <% if(user.role === 'ADMIN') { %>
-            <ul>
-                <li class="nav-item">
-                    <a href="/manageUsers" class="manageUsers" role="button">manageUsers</a>
-                    <a href="/manageGames" class="manageUsers" role="button">manageGames</a>
-                </li>
-            </ul>
+            <div><a href="/manageGames" class="manageUsers" role="button">manageGames</a></div>
         <% } %>
     </div>
     <hr>

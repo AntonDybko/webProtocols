@@ -21,7 +21,13 @@ module.exports = function(app, passport) {
     });
 
     app.get('/chat',isLoggedIn, function(req, res) {
-        res.render('chat.ejs');
+        res.render('chat.ejs',{
+            user: {
+                email: req.user.email,
+                library: req.user.library,
+                role: req.user.role 
+            }
+        });
     });
 
     app.get('/main',isLoggedIn, function(req, res) {
@@ -29,7 +35,11 @@ module.exports = function(app, passport) {
             //console.log(req.user)
             res.render('main.ejs',{
                 gamesList: games,
-                user: req.user
+                user: {
+                    email: req.user.email,
+                    library: req.user.library,
+                    role: req.user.role 
+                }
             })
         })
     });
@@ -81,6 +91,36 @@ module.exports = function(app, passport) {
         })
     });
     //users
+    app.get('/mute/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
+        userManage.changeRole(req.params.userId, 'MUTED', res, '/manageUsers')
+    })
+    app.get('/makeBasic/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
+        userManage.changeRole(req.params.userId, 'BASIC', res, '/manageUsers')
+    })
+    app.get('/makeModerator/:userId', isLoggedIn, permissions.isAdmin, function(req, res) {
+        userManage.changeRole(req.params.userId, 'MODERATOR', res, '/manageUsers')
+    })
+    app.get('/makeAdmin/:userId', isLoggedIn, permissions.isAdmin, function(req, res) {
+        userManage.changeRole(req.params.userId, 'ADMIN', res, '/manageUsers')
+    })
+    app.get('/manageUsers', isLoggedIn, permissions.isModerator, function(req, res) {
+        User.find({}, function(err, users){
+            res.render('users/manageUsers.ejs',{
+                usersList: users,
+                you: {
+                    email: req.user.email,
+                    library: req.user.library,
+                    role: req.user.role 
+                }
+            })
+        })
+    });
+    app.post('/mute/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
+        userManage.changeRole(req.params.userId, 'MUTED', res, '/chat')
+    })
+    app.post('/unmute/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
+        userManage.changeRole(req.params.userId, 'BASIC', res, '/chat')
+    })
     
 
     app.get('/logout', function(req, res) {
@@ -158,7 +198,11 @@ module.exports = function(app, passport) {
             //console.log(games)
             res.render('games/searchedGames.ejs',{
                 games: games,
-                user: req.user
+                user: {
+                    email: req.user.email,
+                    library: req.user.library,
+                    role: req.user.role 
+                }
             })
         })
         //gameManage.addGame(req.body)

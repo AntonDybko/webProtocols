@@ -8,7 +8,7 @@ module.exports = {
         }
         next()
     },
-    isModerator:function(req, rest, next){
+    isModerator:function(req, res, next){
         if(req.user.role === User.ROLES.ADMIN || req.user.role === User.ROLES.MODERATOR){
             next()
         }else{
