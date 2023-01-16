@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Library</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script
+            src="https://code.jquery.com/jquery-3.6.3.js"
+            integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
+            crossorigin="anonymous">
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.0.1/mqtt.min.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3 ">
+                <h1 id="title"><span class="fa"></span>Chats</h1>
+                <h3>Your chat's name:</h3>
+                <input type="text" id="roomName">
+                <button id="btn" onclick="createChat(document.getElementById('roomName').value, document.getElementById('chats'))">Create your chat</button>
+                <div id="errors"></div>
+                <hr/>
+                <ul id="chats"></ul>
+            </div>
+        </div>
+    </body>
+    <script>
+        const clientId = '<%= user._id%>'
+        const email = '<%= user.email%>'
+        const permissions = '<%= user.role%>'
+        /*beforeUnloadListener = (event) => {
+            manager.unsubscribe('getChats')
+            manager.unsubscribe('sendChats')
+        };
+        addEventListener("beforeunload", beforeUnloadListener, {capture: true});*/
+        //oh yeah it is so bad
+
+        const sessionId = clientId + Math.random().toString(16).substr(2, 8)
+        const host = 'ws://broker.emqx.io:8083/mqtt'
+        const options = {
+        keepalive: 60,
+        clientId: sessionId,
+        //clientId: clientId,
+        protocolId: 'MQTT',
+        protocolVersion: 4,
+        clean: true,
+        reconnectPeriod: 1000,
+        connectTimeout: 30 * 1000,
+        will: {
+            topic: 'WillMsg',
+            payload: 'Connection Closed abnormally..!',
+            qos: 0,
+            retain: false
+        },
+        }
+        console.log('Connecting mqtt client')
+        const manager = mqtt.connect(host, options)
+
+        manager.on("connect", function(){
+            console.log('chats page')
+            manager.subscribe('getChats')
+            manager.subscribe('sendChats')
+            manager.publish("getChats", ``)
+            manager.subscribe(clientId)
+        })
+
+        manager.on('message', (topic, string) => {
+            if(topic.toString()==='sendChats'){
+                console.log("gotChats:")
+                //const chats=string.toString().split('|')
+                const chats=string.toString().split('|')
+                console.log(chats)
+                const rooms = document.getElementById('chats')
+                //ids?
+                const lis = rooms.getElementsByTagName('li');
+                const idArray = [];
+                for ( let counter = 0; counter < lis.length; counter++){
+                    idArray.push( lis[counter].id );
+                }
+                if(chats[0] != ''){
+                    chats.forEach(chatname => {
+                        if(idArray.filter(id => id == chatname).length == 0){
+                            let li = document.createElement("li");
+                            li.innerText = chatname;
+                            li.id = chatname
+                            rooms.appendChild(li);
+                            manager.publish("checkMyChats", clientId)
+                        }
+                    })
+                  
+                }
+            }
+            if(topic.toString()===clientId){
+                manager.unsubscribe(clientId)
+                const participation = string.toString().split('|')
+                const rooms = document.getElementById('chats')
+                const lis = rooms.getElementsByTagName('li');
+                console.log(lis)
+                for(let i = 0; i< participation.length; i++){
+                    if(lis[i].firstElementChild  == undefined){
+                        if(parseInt(participation[i])===0){
+                            let joinbutton = document.createElement("button");
+                            joinbutton.innerHTML = "Join";
+                            joinbutton.onclick = function(){
+                                joinbutton.innerHTML = "View"
+                                location.href=`/chat/${lis[i].id}`;
+                            }
+                            lis[i].appendChild(joinbutton);
+                        }else{
+                            let viewbutton = document.createElement("button");
+                            viewbutton.innerHTML = "View";
+                            viewbutton.onclick = function(){
+                                location.href=`/chat/${lis[i].id}`;
+                            }
+                            lis[i].appendChild(viewbutton);
+                            let leavebutton = document.createElement("button");
+                            leavebutton.innerHTML = "Leave";
+                            leavebutton.onclick = function(){
+                                manager.publish("leaveChat", `${lis[i].id}|${clientId}|${email}|${permissions}`);
+                                lis[i].removeChild(leavebutton)
+                                viewbutton.innerHTML="Join"
+                            }
+                            lis[i].appendChild(leavebutton);
+                        }
+                    }
+                }
+            }
+        })
+
+        function createChat (chatname, chats){
+            if(chatname != ''){
+                const li_chats = chats.getElementsByTagName('li');
+                let exists = 0
+                for ( let counter = 0; counter < li_chats.length; counter++){
+                    if(li_chats[counter].id == chatname){
+                        exists++;
+                    }
+                }
+                if(exists==0){
+                    console.log("roomManage try to pub");
+                    manager.publish("roomManage", chatname);
+                    let errors = document.getElementById('errors');
+                    errors.innerHTML='';
+                    manager.publish("joinChat", `${chatname}|${clientId}|${email}|${permissions}`);
+                    location.href=`/chat/${chatname}`;
+                }else{
+                    let errors = document.getElementById('errors')
+                    errors.innerHTML='Chat with same name exists'
+                }
+            }
+          };
+
+    </script>
+</html>

@@ -3,11 +3,15 @@ var Game = require('../app/models/game.js');
 var User = require('../app/models/user.js');
 var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
+const e = require("connect-flash");
 
 module.exports = function(app, passport) {
     app.get('/', function(req, res) {
-        res.render('index.ejs'); // load the index.ejs file
-        //res.render('main.ejs');
+        if(req.user===undefined || res.logout != undefined){
+            res.render('index.ejs');
+        }else{
+            res.redirect('/main')
+        }
     });
 
     app.get('/login', function(req, res) {
@@ -20,7 +24,41 @@ module.exports = function(app, passport) {
         res.render('signup.ejs', { message: req.flash('signupMessage') });
     });
 
-    app.get('/chat',isLoggedIn, function(req, res) {
+    app.get('/logout', function(req, res) {
+        req.session.destroy(function(){
+            res.redirect('/')
+        })
+    });
+
+
+    app.get('/chats',isLoggedIn, function(req, res) {
+            res.render('chats.ejs',{
+                user: {
+                    _id: req.user._id,
+                    email: req.user.email,
+                    library: req.user.library,
+                    role: req.user.role 
+                },
+                
+            });
+        });
+    app.get('/chat/:chatId',isLoggedIn, function(req, res) {
+        //console.log(chatRooms.chatRooms) //cheker
+        //console.log(req.user.email)
+        res.render('chat.ejs',{
+            user: {
+                _id: req.user._id,
+                email: req.user.email,
+                library: req.user.library,
+                role: req.user.role 
+            },
+            chat: req.params.chatId
+        });
+    });
+    app.get('/chaterror',isLoggedIn, function(req, res) {
+        res.send("You can only be active in one chat at a time");
+    });
+    /*app.get('/chat',isLoggedIn, function(req, res) {
         res.render('chat.ejs',{
             user: {
                 email: req.user.email,
@@ -28,7 +66,7 @@ module.exports = function(app, passport) {
                 role: req.user.role 
             }
         });
-    });
+    });*/
 
     app.get('/main',isLoggedIn, function(req, res) {
         Game.find({}, function(err, games){
@@ -36,6 +74,7 @@ module.exports = function(app, passport) {
             res.render('main.ejs',{
                 gamesList: games,
                 user: {
+                    _id: req.user._id,
                     email: req.user.email,
                     library: req.user.library,
                     role: req.user.role 
@@ -92,16 +131,44 @@ module.exports = function(app, passport) {
     });
     //users
     app.get('/mute/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
-        userManage.changeRole(req.params.userId, 'MUTED', res, '/manageUsers')
+        User.findOne({_id: req.params.userId}, function(err, user){
+            if(user.role == 'BASIC'){
+                userManage.changeRole(req.params.userId, 'MUTED', res, '/manageUsers')
+            }else{
+                res.status(409)
+                return res.send('User does not meet the requirements(have to be moderaBASICtor)')
+            }
+        })
     })
     app.get('/makeBasic/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
-        userManage.changeRole(req.params.userId, 'BASIC', res, '/manageUsers')
+        User.findOne({_id: req.params.userId}, function(err, user){
+            if(user.role == 'MUTED' || user.role == 'MODERATOR' ){
+                userManage.changeRole(req.params.userId, 'BASIC', res, '/manageUsers')
+            }else{
+                res.status(409)
+                return res.send('User does not meet the requirements(have to be MUTED or MODERATOR)')
+            }
+        })
     })
     app.get('/makeModerator/:userId', isLoggedIn, permissions.isAdmin, function(req, res) {
-        userManage.changeRole(req.params.userId, 'MODERATOR', res, '/manageUsers')
+        User.findOne({_id: req.params.userId}, function(err, user){
+            if(user.role == 'BASIC'){
+                userManage.changeRole(req.params.userId, 'MODERATOR', res, '/manageUsers')
+            }else{
+                res.status(409)
+                return res.send('User does not meet the requirements(have to be BASIC)')
+            }
+        })
     })
     app.get('/makeAdmin/:userId', isLoggedIn, permissions.isAdmin, function(req, res) {
-        userManage.changeRole(req.params.userId, 'ADMIN', res, '/manageUsers')
+        User.findOne({_id: req.params.userId}, function(err, user){
+            if(user.role == 'MODERATOR'){
+                userManage.changeRole(req.params.userId, 'ADMIN', res, '/manageUsers')
+            }else{
+                res.status(409)
+                return res.send('User does not meet the requirements(have to be MODERATOR)')
+            }
+        })
     })
     app.get('/manageUsers', isLoggedIn, permissions.isModerator, function(req, res) {
         User.find({}, function(err, users){
@@ -116,10 +183,24 @@ module.exports = function(app, passport) {
         })
     });
     app.post('/mute/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
-        userManage.changeRole(req.params.userId, 'MUTED', res, '/chat')
+        User.findOne({_id: req.params.userId}, function(err, user){
+            if(user.role == 'BASIC'){
+                userManage.changeRole(req.params.userId, 'MUTED', res, '/chat')
+            }else{
+                res.status(409)
+                return res.send('User does not meet the requirements(have to be BASIC)')
+            }
+        })
     })
     app.post('/unmute/:userId', isLoggedIn, permissions.isModerator, function(req, res) {
-        userManage.changeRole(req.params.userId, 'BASIC', res, '/chat')
+        User.findOne({_id: req.params.userId}, function(err, user){
+            if(user.role == 'MUTED'){
+                userManage.changeRole(req.params.userId, 'BASIC', res, '/chat')
+            }else{
+                res.status(409)
+                return res.send('User does not meet the requirements(have to be MUTED)')
+            }
+        })
     })
     
 
@@ -199,6 +280,7 @@ module.exports = function(app, passport) {
             res.render('games/searchedGames.ejs',{
                 games: games,
                 user: {
+                    _id: req.user._id,
                     email: req.user.email,
                     library: req.user.library,
                     role: req.user.role 

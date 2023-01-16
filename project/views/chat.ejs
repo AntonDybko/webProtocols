@@ -78,7 +78,7 @@
     <body>
         <div class="container">
             <div class="col-sm-6 col-sm-offset-3 ">
-                <h1 id="title"><span class="fa"></span>Chat</h1>
+                <h1 id="title"><span class="fa"></span>Chat - <%= chat%></h1>
                 <div id="chat" class="fa fa-area-chart chat">
                 </div>
                 <div>
@@ -94,12 +94,14 @@
         const clientId = '<%= user._id%>'
         const email = '<%= user.email%>'
         const permissions = '<%= user.role%>'
-
-        const sessionId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+        const chatId = '<%= chat%>'
+        //console.log(clientId)
+        const sessionId = 'chat' + chatId + Math.random().toString(16).substr(2, 8)
         const host = 'ws://broker.emqx.io:8083/mqtt'
         const options = {
         keepalive: 60,
         clientId: sessionId,
+        //clientId: clientId,
         protocolId: 'MQTT',
         protocolVersion: 4,
         clean: true,
@@ -115,85 +117,113 @@
         console.log('Connecting mqtt client')
         const client = mqtt.connect(host, options)
 
-        beforeUnloadListener = (event) => {
-            client.publish('leaveChat', `${clientId}|${email}|${permissions}`)
+        /*beforeUnloadListener = (event) => {
+            client.unsubscribe(chatId)
+            client.unsubscribe('sendChats')
+            client.publish('leaveChat', `${chatId}|${clientId}|${email}|${permissions}`)
         };
-        addEventListener("beforeunload", beforeUnloadListener, {capture: true});
+        addEventListener("beforeunload", beforeUnloadListener, {capture: true});*/
         //works very bad((((((((
+        window.addEventListener("load", function (event) {
+            client.on("connect", function(){
+                console.log('connect')
+                client.subscribe('sendChats')
+                client.publish("getChats", ``)
+                client.subscribe('you_are_in_chat')
+            })
+        
 
-        client.on("connect", function(){
-            console.log('connect')
-            client.subscribe('checkedTwits')
-            client.subscribe('twits')
-            client.publish("onConnected", `${email}|${clientId}|${permissions}`)
-        })
-
-        client.on('message', (topic, string) => {
-            if(topic.toString()==='checkedTwits'){
-                const id_mail_twit_perm = string.toString().split('|')
-                if(id_mail_twit_perm[3]!='MUTED'){
-                    let chat = document.getElementById("chat")
-                    let div = document.createElement("div");
-
-                    let p_mail = document.createElement("span");
-                    p_mail.innerText=`${id_mail_twit_perm[1]}`;
-
-                    let popup = document.createElement("span");
-                    if(permissions ==='ADMIN' || permissions === 'MODERATOR'){
-                        let form = document.createElement("form");
-                        let button = document.createElement("button");
-                        button.type='submit';
-                        form.method='post';
-                        if(id_mail_twit_perm[3]==='MUTED'){
-                            form.action=`/makeBasic/${id_mail_twit_perm[0]}`;
-                            button.innerText='UNMUTE';
-                            button.onclick =()=>{
-                                form.action=`/mute/${id_mail_twit_perm[0]}`;
-                                button.innerText='MUTE';
-                            }
+            client.on('message', (topic, string) => {
+                if(topic.toString()==='sendChats'){
+                    client.unsubscribe('sendChats')
+                    const chats=string.toString().split('|')
+                    client.publish("roomManage", chatId);
+                    client.publish('am_i_in_chat', `${chatId}|${clientId}|${email}|${permissions}`)
+                }if(topic.toString()==='you_are_in_chat'){
+                    client.unsubscribe('you_are_in_chat')
+                    const result_id = string.toString().split('|')
+                    console.log(result_id)
+                    if(result_id[1]==clientId){
+                        console.log(result_id[1])
+                        client.subscribe(chatId)//multiwindow
+                        if(result_id[0] === 'true'){
+                            //client.publish('leaveChat', `${chatId}|${clientId}|${email}|${permissions}`)
+                            //client.unsubscribe(chatId)
+                            //window.location.replace('/chaterror/')
+                            
                         }else{
-                            form.action=`/mute/${id_mail_twit_perm[0]}`;
-                            button.innerText='MUTE';
-                            button.onclick =()=>{
-                                form.action=`/makeBasic/${id_mail_twit_perm[0]}`;
-                                button.innerText='UNMUTE';
-                            }
+                            //client.subscribe(chatId)//onewindow
+                            client.publish("joinChat", `${chatId}|${clientId}|${email}|${permissions}`);
                         }
-                        form.appendChild(button)
-                        popup.appendChild(form)
-                    }
-                    let id = document.createElement("div")
-                    id.innerText=id_mail_twit_perm[0];
-                    popup.appendChild(id);
-                    popup.classList.toggle('popuptext');
-                    p_mail.classList.toggle('popup');
-                    p_mail.onclick= ()=>{
-                        let popups = [...document.getElementsByClassName('popuptext')];
-                        let clickedOnClosedPopup = popup && !popup.classList.contains('show');
-                        popups.forEach(p => p.classList.remove('show'));
-
-                        if (clickedOnClosedPopup) popup.classList.toggle('show');  
-                        //popup.classList.toggle("show");
-                    }
-                    p_mail.appendChild(popup)
-
-                    let p_msg = document.createElement("span");
-                    p_msg.innerText = `: ${id_mail_twit_perm[2]}`;
-                    div.appendChild(p_mail)
-                    div.appendChild(p_msg)
-
-                    if(id_mail_twit_perm[2] != undefined){
-                        //console.log(div.innerText)
-                        chat.appendChild(div)
                     }
                 }
-            }
-        })
+                if(topic.toString()===chatId){
+                    const id_mail_twit_perm = string.toString().split('|')
+                    if(id_mail_twit_perm[3]!='MUTED'){
+                        let chat = document.getElementById("chat")
+                        let div = document.createElement("div");
+
+                        let p_mail = document.createElement("span");
+                        p_mail.innerText=`${id_mail_twit_perm[1]}`;
+
+                        let popup = document.createElement("span");
+                        if((permissions ==='ADMIN' || permissions === 'MODERATOR') && id_mail_twit_perm[3]==='BASIC'){
+                            let form = document.createElement("form");
+                            let button = document.createElement("button");
+                            button.type='submit';
+                            form.method='post';
+                            if(id_mail_twit_perm[3]==='MUTED'){
+                                form.action=`/makeBasic/${id_mail_twit_perm[0]}`;
+                                button.innerText='UNMUTE';
+                                button.onclick =()=>{
+                                    form.action=`/mute/${id_mail_twit_perm[0]}`;
+                                    button.innerText='MUTE';
+                                }
+                            }else{
+                                form.action=`/mute/${id_mail_twit_perm[0]}`;
+                                button.innerText='MUTE';
+                                button.onclick =()=>{
+                                    form.action=`/makeBasic/${id_mail_twit_perm[0]}`;
+                                    button.innerText='UNMUTE';
+                                }
+                            }
+                            form.appendChild(button)
+                            popup.appendChild(form)
+                        }
+                        let id = document.createElement("div")
+                        id.innerText=id_mail_twit_perm[0];
+                        popup.appendChild(id);
+                        popup.classList.toggle('popuptext');
+                        p_mail.classList.toggle('popup');
+                        p_mail.onclick= ()=>{
+                            let popups = [...document.getElementsByClassName('popuptext')];
+                            let clickedOnClosedPopup = popup && !popup.classList.contains('show');
+                            popups.forEach(p => p.classList.remove('show'));
+
+                            if (clickedOnClosedPopup) popup.classList.toggle('show');  
+                            //popup.classList.toggle("show");
+                        }
+                        p_mail.appendChild(popup)
+
+                        let p_msg = document.createElement("span");
+                        p_msg.innerText = `: ${id_mail_twit_perm[2]}`;
+                        div.appendChild(p_mail)
+                        div.appendChild(p_msg)
+
+                        if(id_mail_twit_perm[2] != undefined){
+                            //console.log(div.innerText)
+                            chat.appendChild(div)
+                        }
+                    }
+                }
+            })
+        });
 
         function sendTwit (twit) {
             console.log(twit)
-            console.log(`${clientId}|${email}|${twit}|${permissions}`)
-            client.publish('twits', `${clientId}|${email}|${twit}|${permissions}`)
+            console.log(`${chatId}|${clientId}|${email}|${twit}|${permissions}`)
+            //client.publish('twits', `${clientId}|${email}|${twit}|${permissions}`)
+            client.publish(chatId, `${clientId}|${email}|${twit}|${permissions}`)
         }
 
     </script>

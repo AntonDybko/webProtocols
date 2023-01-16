@@ -62,48 +62,102 @@ const options = {
 }
 console.log('Connecting mqtt client')
 const server = mqtt.connect(host, options)
-const users = [];
+//const users = [];
+//const chatRooms = [{key:"chat1", users:[]}, {key:"newchat", users:[]}];
+const chatRooms = [];
 
 server.on("connect", function(){
-    server.subscribe("onConnected")
-    server.subscribe("twits")
+    //server.subscribe("twits")
     server.subscribe("leaveChat")
-    server.subscribe('checkedTwits')
+    server.subscribe("joinChat")
+    server.subscribe('getChats')
+    server.subscribe('roomManage')
+    server.subscribe('am_i_in_chat')
+    server.subscribe('checkMyChats')
+    console.log('mqqt server is up')
     //server.subscribe('load')
     //server.publish("onConneted", "gogo")
 })
 server.on("message", (topic, string)=>{
-    if(topic.toString()==='onConnected'){
-        //console.log(`${string}|onConnected`)
-        const mail_id_perm = string.toString().split('|')
-        if(!users.includes(mail_id_perm[1])){
-            users.push(mail_id_perm[1])
-        }
-        console.log(users)
-        server.publish("checkedTwits", `${mail_id_perm[1]}|${mail_id_perm[0]}|${mail_id_perm[0]} has joined chat.|${mail_id_perm[2]}`)//joining chat
+    if(topic.toString()==='getChats'){
+        const chats = chatRooms.map(room =>{
+            return room.key
+        })
+
+        console.log(chats)//check?
+        server.publish("sendChats", `${chats.join('|')}`)//joining chat
     }
-    if(topic.toString()==="twits"){
-        const id_mail_twit_role = string.toString().split('|')
-        if(users.includes(id_mail_twit_role[0])){
-            console.log('twit confirmed')
-            if(id_mail_twit_role[3] != 'MUTED'){
-                server.publish('checkedTwits', string)
-            }
-            //server.publish('checkedTwits', string)
+    if(topic.toString()==='roomManage'){
+        console.log(`roomManage: ${string.toString()}`)
+        const chats = chatRooms.map(room =>{
+            return room.key
+        })
+        if(!chats.includes(string.toString())){
+            chatRooms.push({
+                key:string.toString(),
+                users:[]
+            })
+            server.publish("sendChats", chats.join('|'))
         }
+    }
+    if(topic.toString()==="checkMyChats"){
+        //const chat_id_mail_perm = string.toString().split('|');
+        const u_id = string.toString()
+        const participation = []
+        chatRooms.forEach(function(chat_users){
+            if(chat_users.users.includes(u_id)){
+                participation.push(1)
+            }else{
+                participation.push(0)
+            }
+        })
+        server.publish(u_id, participation.join('|'))
+    }
+    if(topic.toString()==="am_i_in_chat"){
+        const chat_id_mail_perm = string.toString().split('|');
+        const in_chat = chatRooms.every(function(chat_users){
+            if(chat_users.key==chat_id_mail_perm[0] && chat_users.users.includes(chat_id_mail_perm[1])){
+                return false
+            }else{
+                return true
+            }
+        })
+        if(in_chat===false) server.publish('you_are_in_chat', `true|${chat_id_mail_perm[1]}`)
+        else server.publish('you_are_in_chat', `false|${chat_id_mail_perm[1]}`)
+    }
+    if(topic.toString()==="joinChat"){
+        const chat_id_mail_perm = string.toString().split('|');
+        chatRooms.forEach(function(chat_users){
+            if(chat_users.key==chat_id_mail_perm[0] && !chat_users.users.includes(chat_id_mail_perm[1])){
+                console.log(`${chat_users.users} before ${chat_id_mail_perm[2]} joined`)
+                chat_users.users.push(chat_id_mail_perm[1])
+                console.log(`${chat_users.users} after ${chat_id_mail_perm[2]} joined`)
+            }
+        })
+        server.publish(chat_id_mail_perm[0], `${chat_id_mail_perm[1]}|${chat_id_mail_perm[2]}|has joined chat.|${chat_id_mail_perm[3]}`)
     }
     if(topic.toString()==="leaveChat"){
-        const mail_id_perm = string.toString().split('|');
-        console.log(`leaveChat: ${mail_id_perm[1]}`);
-        for(let i =0; i<users.length; i++){
-            if(users[i]===mail_id_perm[0]){
-                users.splice(i, 1)
+        console.log('try to leave')
+        const chat_id_mail_perm = string.toString().split('|');
+        chatRooms.forEach(function(chat_users){
+            if(chat_users.key==chat_id_mail_perm[0] && chat_users.users.includes(chat_id_mail_perm[1])){
+                console.log(`${chat_users.users} before ${chat_id_mail_perm[2]} leave`)
+                let userIndex = chat_users.users.indexOf(chat_id_mail_perm[1])
+                chat_users.users.splice(userIndex, 1)
+                console.log(`${chat_users.users} after ${chat_id_mail_perm[2]} leave`)
+                if(chat_users.users.length === 0){
+                    let chatRoomIndex = chatRooms.indexOf(chat_users)
+                    chatRooms.splice(chatRoomIndex, 1)
+                    console.log(`${chat_id_mail_perm[0]} was deleted because of inactivity`)
+                    console.log(chatRooms)
+                }
             }
-        }
-        server.publish("checkedTwits", `${mail_id_perm[0]}|${mail_id_perm[1]}| has left chat.|${mail_id_perm[2]}`)
+        })
+        server.publish(chat_id_mail_perm[0], `${chat_id_mail_perm[1]}|${chat_id_mail_perm[2]}| has left chat.|${chat_id_mail_perm[3]}`)
     }
 })
+//exports.chatRooms = chatRooms
 
-const port = 3002;
+const port = 3000;
 app.listen(port);
 console.log(`Listening to port ${port}`);

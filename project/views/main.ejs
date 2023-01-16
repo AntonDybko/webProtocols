@@ -12,8 +12,11 @@
 <div class="container">
     <div class="jumbotron text-center">
         <h1><span class="fa fa-lock"></span>Store</h1>
+        <div>
+            <a href="/logout" class="btn btn-default"><span class="fa fa-user"></span>Logout</a>
+        </div>
         <a href="/library" class="btn btn-default"><span class="fa fa-user"></span>LIBRARY</a>
-        <a href="/chat" class="btn btn-default"><span class="fa fa-user"></span>CHAT</a>
+        <a href="/chats" class="btn btn-default"><span class="fa fa-user"></span>CHATS</a>
 
         <% //const user = await User.findOne({ user: req.params.id }).lean(); %>
         <% if(user.role === 'MODERATOR' || user.role === 'ADMIN') { %>
