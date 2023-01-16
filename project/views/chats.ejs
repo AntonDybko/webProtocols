@@ -55,76 +55,77 @@
         }
         console.log('Connecting mqtt client')
         const manager = mqtt.connect(host, options)
+        window.addEventListener("load", function (event) {
+            manager.on("connect", function(){
+                console.log('chats page')
+                manager.subscribe('getChats')
+                manager.subscribe('sendChats')
+                manager.publish("getChats", ``)
+                manager.subscribe(clientId)
+            })
 
-        manager.on("connect", function(){
-            console.log('chats page')
-            manager.subscribe('getChats')
-            manager.subscribe('sendChats')
-            manager.publish("getChats", ``)
-            manager.subscribe(clientId)
-        })
-
-        manager.on('message', (topic, string) => {
-            if(topic.toString()==='sendChats'){
-                console.log("gotChats:")
-                //const chats=string.toString().split('|')
-                const chats=string.toString().split('|')
-                console.log(chats)
-                const rooms = document.getElementById('chats')
-                //ids?
-                const lis = rooms.getElementsByTagName('li');
-                const idArray = [];
-                for ( let counter = 0; counter < lis.length; counter++){
-                    idArray.push( lis[counter].id );
+            manager.on('message', (topic, string) => {
+                if(topic.toString()==='sendChats'){
+                    console.log("gotChats:")
+                    //const chats=string.toString().split('|')
+                    const chats=string.toString().split('|')
+                    console.log(chats)
+                    const rooms = document.getElementById('chats')
+                    //ids?
+                    const lis = rooms.getElementsByTagName('li');
+                    const idArray = [];
+                    for ( let counter = 0; counter < lis.length; counter++){
+                        idArray.push( lis[counter].id );
+                    }
+                    if(chats[0] != ''){
+                        chats.forEach(chatname => {
+                            if(idArray.filter(id => id == chatname).length == 0){
+                                let li = document.createElement("li");
+                                li.innerText = chatname;
+                                li.id = chatname
+                                rooms.appendChild(li);
+                                manager.publish("checkMyChats", clientId)
+                            }
+                        })
+                    
+                    }
                 }
-                if(chats[0] != ''){
-                    chats.forEach(chatname => {
-                        if(idArray.filter(id => id == chatname).length == 0){
-                            let li = document.createElement("li");
-                            li.innerText = chatname;
-                            li.id = chatname
-                            rooms.appendChild(li);
-                            manager.publish("checkMyChats", clientId)
-                        }
-                    })
-                  
-                }
-            }
-            if(topic.toString()===clientId){
-                manager.unsubscribe(clientId)
-                const participation = string.toString().split('|')
-                const rooms = document.getElementById('chats')
-                const lis = rooms.getElementsByTagName('li');
-                console.log(lis)
-                for(let i = 0; i< participation.length; i++){
-                    if(lis[i].firstElementChild  == undefined){
-                        if(parseInt(participation[i])===0){
-                            let joinbutton = document.createElement("button");
-                            joinbutton.innerHTML = "Join";
-                            joinbutton.onclick = function(){
-                                joinbutton.innerHTML = "View"
-                                location.href=`/chat/${lis[i].id}`;
+                if(topic.toString()===clientId){
+                    manager.unsubscribe(clientId)
+                    const participation = string.toString().split('|')
+                    const rooms = document.getElementById('chats')
+                    const lis = rooms.getElementsByTagName('li');
+                    console.log(lis)
+                    for(let i = 0; i< participation.length; i++){
+                        if(lis[i].firstElementChild  == undefined){
+                            if(parseInt(participation[i])===0){
+                                let joinbutton = document.createElement("button");
+                                joinbutton.innerHTML = "Join";
+                                joinbutton.onclick = function(){
+                                    joinbutton.innerHTML = "View"
+                                    location.href=`/chat/${lis[i].id}`;
+                                }
+                                lis[i].appendChild(joinbutton);
+                            }else{
+                                let viewbutton = document.createElement("button");
+                                viewbutton.innerHTML = "View";
+                                viewbutton.onclick = function(){
+                                    location.href=`/chat/${lis[i].id}`;
+                                }
+                                lis[i].appendChild(viewbutton);
+                                let leavebutton = document.createElement("button");
+                                leavebutton.innerHTML = "Leave";
+                                leavebutton.onclick = function(){
+                                    manager.publish("leaveChat", `${lis[i].id}|${clientId}|${email}|${permissions}`);
+                                    lis[i].removeChild(leavebutton)
+                                    viewbutton.innerHTML="Join"
+                                }
+                                lis[i].appendChild(leavebutton);
                             }
-                            lis[i].appendChild(joinbutton);
-                        }else{
-                            let viewbutton = document.createElement("button");
-                            viewbutton.innerHTML = "View";
-                            viewbutton.onclick = function(){
-                                location.href=`/chat/${lis[i].id}`;
-                            }
-                            lis[i].appendChild(viewbutton);
-                            let leavebutton = document.createElement("button");
-                            leavebutton.innerHTML = "Leave";
-                            leavebutton.onclick = function(){
-                                manager.publish("leaveChat", `${lis[i].id}|${clientId}|${email}|${permissions}`);
-                                lis[i].removeChild(leavebutton)
-                                viewbutton.innerHTML="Join"
-                            }
-                            lis[i].appendChild(leavebutton);
                         }
                     }
                 }
-            }
+            })
         })
 
         function createChat (chatname, chats){

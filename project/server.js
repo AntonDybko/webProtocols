@@ -65,9 +65,10 @@ const server = mqtt.connect(host, options)
 //const users = [];
 //const chatRooms = [{key:"chat1", users:[]}, {key:"newchat", users:[]}];
 const chatRooms = [];
+exports.server = server
+exports.chatRooms = chatRooms
 
 server.on("connect", function(){
-    //server.subscribe("twits")
     server.subscribe("leaveChat")
     server.subscribe("joinChat")
     server.subscribe('getChats')
@@ -75,8 +76,6 @@ server.on("connect", function(){
     server.subscribe('am_i_in_chat')
     server.subscribe('checkMyChats')
     console.log('mqqt server is up')
-    //server.subscribe('load')
-    //server.publish("onConneted", "gogo")
 })
 server.on("message", (topic, string)=>{
     if(topic.toString()==='getChats'){
@@ -101,7 +100,6 @@ server.on("message", (topic, string)=>{
         }
     }
     if(topic.toString()==="checkMyChats"){
-        //const chat_id_mail_perm = string.toString().split('|');
         const u_id = string.toString()
         const participation = []
         chatRooms.forEach(function(chat_users){
