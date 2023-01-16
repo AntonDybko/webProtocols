@@ -17,8 +17,6 @@
         </div>
         <a href="/library" class="btn btn-default"><span class="fa fa-user"></span>LIBRARY</a>
         <a href="/chats" class="btn btn-default"><span class="fa fa-user"></span>CHATS</a>
-
-        <% //const user = await User.findOne({ user: req.params.id }).lean(); %>
         <% if(user.role === 'MODERATOR' || user.role === 'ADMIN') { %>
             <div><a href="/manageUsers" class="manageUsers" role="button">manageUsers</a></div>
         <% } %>

@@ -101,9 +101,12 @@ module.exports = function(app, passport) {
     app.get('/gameInfo/:game_id',isLoggedIn, function(req, res) {
         const game_id = req.params.game_id.replace('.', '')
         Game.findOne({_id: game_id}, function(err, game){
-            res.render('games/gameInfo.ejs',{
-                game: game
-            }); 
+            User.findOne({_id: req.user._id}, function(err, user){
+                res.render('games/gameInfo.ejs',{
+                    game: game,
+                    u_library: user.library
+                }); 
+            })
         })
     });
     //users
@@ -250,6 +253,7 @@ module.exports = function(app, passport) {
         gameManage.updateGame(game_id, req.body)
         res.redirect('/listOfGames');
     });
+    //zrobić jako link...!!!!!
     app.post('/searchByName',isLoggedIn, function(req, res){
         Game.find({"name": { $regex: `${req.body.name}`}}, function(err, games){
             res.render('games/searchedGames.ejs',{
@@ -267,6 +271,7 @@ module.exports = function(app, passport) {
     app.post('/addToLibrary/:game_id',isLoggedIn, function(req, res){
         const game_id = req.params.game_id.replace('.', '')
         userManage.addToLibrary(game_id, req.user)
+        res.redirect('/library')
     });
     
 

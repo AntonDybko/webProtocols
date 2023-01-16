@@ -67,11 +67,21 @@
                 from {opacity: 0;}
                 to {opacity:1 ;}
             }
+            .menu {
+                background-color: lightgray;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="col-sm-6 col-sm-offset-3 ">
+                <nav class="navbar navbar-light bg-light menu">
+                    <a href="/main" class="navbar-brand">main page</a>
+                    <a href="/chats" class="navbar-brand">chats</a>
+                </nav>
                 <h1 id="title"><span class="fa"></span>Chat - <%= chat%></h1>
                 <div id="chat" class="fa fa-area-chart chat">
                 </div>

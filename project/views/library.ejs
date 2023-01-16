@@ -11,11 +11,21 @@
         </script>
         <style>
             body        { padding-top:80px; }
+            .menu {
+                background-color: lightgray;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="col-sm-6 col-sm-offset-3">
+                <nav class="navbar navbar-light bg-light menu">
+                    <a href="/main" class="navbar-brand">main page</a>
+                    <a href="/logout" class="navbar-brand">logout</a>
+                </nav>
                 <h1><span class="fa"></span>Games</h1>
                 <ul>
                     <%yourGames.forEach( game => {%>
