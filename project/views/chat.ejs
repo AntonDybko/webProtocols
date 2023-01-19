@@ -4,6 +4,7 @@
         <title>Library</title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script> <!-- load axios test-->
         <script
             src="https://code.jquery.com/jquery-3.6.3.js"
             integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
@@ -175,7 +176,7 @@
                             p_mail.innerText=`${id_mail_twit_perm[1]}`;
 
                             let popup = document.createElement("span");
-                            if((permissions ==='ADMIN' || permissions === 'MODERATOR') && id_mail_twit_perm[3]==='BASIC'){
+                            /*if((permissions ==='ADMIN' || permissions === 'MODERATOR') && id_mail_twit_perm[3]==='BASIC'){
                                 let form = document.createElement("form");
                                 let button = document.createElement("button");
                                 button.type='submit';
@@ -185,6 +186,21 @@
                                 button.innerText='MUTE';
                                 form.appendChild(button)
                                 popup.appendChild(form)
+                            }*/
+                            if((permissions ==='ADMIN' || permissions === 'MODERATOR') && id_mail_twit_perm[3]==='BASIC'){
+                                let formdiv = document.createElement("div");
+                                let button = document.createElement("button");
+                                //button.type='submit';
+                                //form.method='post';
+                                //form.action=`/mute/${id_mail_twit_perm[0]}?chat=${chatId}`;
+                                //form.action=`/mute/${id_mail_twit_perm[0]}?chat=${chatId}`;
+                                button.innerText='MUTE';
+                                button.onclick=() =>{
+                                    axios.put(`/muteFromChat/${id_mail_twit_perm[0]}?chat=${chatId}`, {}) //put with empty body?????
+                                }
+                                //form.appendChild(button)
+                                formdiv.appendChild(button)
+                                popup.appendChild(formdiv)
                             }
                             let id = document.createElement("div")
                             id.innerText=id_mail_twit_perm[0];

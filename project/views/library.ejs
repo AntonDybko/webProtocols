@@ -4,6 +4,7 @@
         <title>Library</title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script> <!-- load axios test-->
         <script
             src="https://code.jquery.com/jquery-3.6.3.js"
             integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
@@ -32,10 +33,15 @@
                         <%console.log(game)%>
                         <li>
                             <span><%= game.name%></span>
-                            <a href="/removeFromLibrary/<%= game._id%>" class="btn btn-default">
+                            <!--<a href="/removeFromLibrary/<%= game._id%>" class="btn btn-default">
                                 <span class="fa"></span>
                                 remove from library
-                            </a>
+                            </a>-->
+                            
+                            <button class="btn btn-default" onclick="removeFromLibrary('<%= game._id%>')">
+                                <span class="fa"></span>
+                                remove from library
+                            </button>
                             <button id="description_button:<%= game._id%>" onclick="loadGame('<%= game._id%>', '<%= game.name%>', '<%= game.author%>', '<%= game.date%>', '<%= game.description%>')">See more...</button>
                             <div id="div:<%= game._id%>"></div>
                         </li>
@@ -46,6 +52,9 @@
         </div>
     </body>
     <script>
+        const removeFromLibrary = (gameId) =>{
+            axios.delete(`/removeFromLibrary/${gameId}`)
+        }
         function loadGame(id, name, author, date, description){
             let shownGame = document.getElementById(`div:${id}`) //main div
             console.log('fisting')

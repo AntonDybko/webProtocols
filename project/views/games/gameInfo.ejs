@@ -4,6 +4,7 @@
         <title>Node Authentication</title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script> <!-- load axios test-->
         <style>
             body        { padding-top:80px; }
             .menu {
@@ -21,7 +22,8 @@
                     <a href="/main" class="navbar-brand">main page</a>
                     <a href="/logout" class="navbar-brand">logout</a>
                 </nav>
-                <form action="/addToLibrary/<%= game._id%>" method="post">
+
+                <form action="/addToLibrary/<%= game._id%>" method="post">-->
                     <h1><span class="fa"></span><%= game.name%></h1>
                     <div>
                         <h3>Author:</h3>
@@ -40,14 +42,29 @@
                     <% if(!u_library.includes(game._id)) {%>
                         <div>
                             <button type="submit" class="btn btn-warning btn-lg">Add to library</button>
+                            <!--<button class="btn btn-default" onclick="addToLibrary('<%= game._id%>')">
+                                <span class="fa"></span>
+                                remove from library
+                            </button>-->
                         </div>
                     <%}else{%>
                         <div>
-                            <a href="/removeFromLibrary/<%= game._id%>" class="btn btn-warning btn-lg">Remove from library</a>
+                            <!--<a href="/removeFromLibrary/<%= game._id%>" class="btn btn-warning btn-lg">Remove from library</a>-->
+                            <button class="btn btn-default" onclick="removeFromLibrary('<%= game._id%>')">
+                                <span class="fa"></span>
+                                remove from library
+                            </button>
                         </div>
                     <%}%>
+
                 </form>
             </div>
         </div>
     </body>
+    <script>
+        const removeFromLibrary = (gameId) =>{
+            axios.delete(`/removeFromLibrary/${gameId}`)
+        }
+        
+    </script>
 </html>
