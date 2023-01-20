@@ -6,6 +6,7 @@
         </title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
         <style>
             body        { padding-top:80px; }
             .menu {
@@ -32,33 +33,18 @@
                                 <span><%= user.name%></span>
                                 <span><%= user.role%></span>
                                 <%if(user.role=='MUTED'){%>
-                                    <a href="/makeBasic/<%= user._id%>" class="btn btn-default">
-                                        <span class="fa"></span>
-                                        (Unmute)
-                                    </a>
+                                    <button "btn btn-default" onclick="makeBasic('<%= user._id%>')">+(Unmute)</button>
                                 <%}else{%>
                                     <%if(user.role=='BASIC'){%>
                                         <%if(you.role=='MODERATOR' || you.role=='ADMIN'){%>
-                                            <a href="/makeModerator/<%= user._id%>" class="btn btn-default">
-                                                <span class="fa"></span>
-                                                +(MODERATOR)
-                                            </a>
+                                            <button "btn btn-default" onclick="makeModerator('<%= user._id%>')">+(MODERATOR)</button>
+                                            <button "btn btn-default" onclick="mute('<%= user._id%>')">-(MUTE)</button>
                                         <%}%>
-                                        <a href="/mute/<%= user._id%>" class="btn btn-default">
-                                            <span class="fa"></span>
-                                            -(Mute)
-                                        </a>
                                     <%}else{%>
                                         <%if(you.role=='ADMIN'){%>
                                             <%if(user.role=='MODERATOR'){%>
-                                                <a href="/makeAdmin/<%= user._id%>" class="btn btn-default">
-                                                    <span class="fa"></span>
-                                                    +(Admin)
-                                                </a>
-                                                <a href="/makeBasic/<%= user._id%>" class="btn btn-default">
-                                                    <span class="fa"></span>
-                                                    -(Basic)
-                                                </a>
+                                                <button "btn btn-default" onclick="makeAdmin('<%= user._id%>')">+(ADMIN)</button>
+                                                <button "btn btn-default" onclick="makeBasic('<%= user._id%>')">-(BASIC)</button>
                                             <%}%>
                                         <%}%>
                                     <%}%>
@@ -71,4 +57,26 @@
             </div>
         </div>
     </body>
+    <script>
+        const mute = (userId) => {
+            axios.put(`/mute?userId=${userId}`, {}).then(()=>{
+                open(location, '_self')
+            })
+        }
+        const makeBasic = (userId) => {
+            axios.put(`/makeBasic?userId=${userId}`, {}).then(()=>{
+                open(location, '_self')
+            })
+        }
+        const makeModerator = (userId) => {
+            axios.put(`/makeModerator?userId=${userId}`, {}).then(()=>{
+                open(location, '_self')
+            })
+        }
+        const makeAdmin = (userId) => {
+            axios.put(`/makeAdmin?userId=${userId}`, {}).then(()=>{
+                open(location, '_self')
+            })
+        }
+    </script>
 </html>

@@ -163,7 +163,7 @@
                     if(string.toString().split('|')[1]=='BANNED' && string.toString().split('|')[0]==clientId){
                         client.publish(chatId, `${clientId}|${email}|have been banned:(|${permissions}`)
                         //window.open('/muted', '_blank');
-                        open(location, '_self').close();
+                        open(location, '_self')//.close();
                         //nie wiem jak, ale to działa:)
                     }else{
                         const id_mail_twit_perm = string.toString().split('|')
@@ -196,7 +196,11 @@
                                 //form.action=`/mute/${id_mail_twit_perm[0]}?chat=${chatId}`;
                                 button.innerText='MUTE';
                                 button.onclick=() =>{
-                                    axios.put(`/muteFromChat/${id_mail_twit_perm[0]}?chat=${chatId}`, {}) //put with empty body?????
+                                    
+                                    axios.put(`/muteFromChat?userId=${id_mail_twit_perm[0]}&chat=${chatId}`, {}).then(()=>{
+                                        open(location, '_self')
+                                        //window.location.href=`/chat/${req.query.chat}`
+                                    })
                                 }
                                 //form.appendChild(button)
                                 formdiv.appendChild(button)

@@ -53,7 +53,9 @@
     </body>
     <script>
         const removeFromLibrary = (gameId) =>{
-            axios.delete(`/removeFromLibrary/${gameId}`)
+            axios.delete(`/removeFromLibrary/${gameId}`).then(()=>{
+                open(location, '_self')
+            })
         }
         function loadGame(id, name, author, date, description){
             let shownGame = document.getElementById(`div:${id}`) //main div

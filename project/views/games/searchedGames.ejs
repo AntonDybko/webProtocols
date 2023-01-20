@@ -34,10 +34,6 @@
                                     <span class="fa"></span>
                                     update game
                                 </a>
-                                <!--<a href="/deleteGame/<%= game._id%>" class="btn btn-default">
-                                    <span class="fa"></span>
-                                    delete game
-                                </a>-->
                                 <button class="btn btn-default" onclick="removeGame('<%= game._id%>')">
                                     <span class="fa"></span>
                                     delete game
@@ -54,8 +50,13 @@
         /*const updateGame = (gameId) =>{
             axios.put(`/updateGame/${gameId}`, )
         }*/
-        const removeGame = (gameId) =>{
+        /*const removeGame = (gameId) =>{
             axios.delete(`/removeGame/${game_id}`)
-        }   
+        }   */
+        const removeGame = (gameId) =>{
+            axios.delete(`/removeGame/${gameId}`).then(
+                open(location, '_self').close()
+            )
+        }
     </script>
 </html>

@@ -4,7 +4,7 @@
         <title>Node Authentication</title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script> <!-- load axios test-->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>  <!-- load axios test-->
         <style>
             body        { padding-top:80px; }
             .menu {
@@ -27,22 +27,10 @@
                     <%gamesList.forEach( game => {%>
                         <li>
                             <div><%= game.name%></div>
-                            <!--<button  class="btn btn-default" onclick="updateGame('<%= game._id%>')">
-                                <span class="fa"></span>
-                                update game
-                            </button>
-                            <button class="btn btn-default" onclick="deleteGame('<%= game._id%>')">
-                                <span class="fa"></span>
-                                delete game
-                            </button>-->
                             <a href="/updateGame/<%= game._id%>" class="btn btn-default">
                                 <span class="fa"></span>
                                 update game
                             </a>
-                            <!--<a href="/deleteGame/<%= game._id%>" class="btn btn-default">
-                                <span class="fa"></span>
-                                delete game
-                            </a>-->
                             <button class="btn btn-default" onclick="removeGame('<%= game._id%>')">
                                 <span class="fa"></span>
                                 delete game
@@ -58,8 +46,11 @@
         /*const updateGame = (gameId) =>{
             axios.put(`/updateGame/${gameId}`, )
         }*/
+        //gameId = 
         const removeGame = (gameId) =>{
-            axios.delete(`/removeGame/${game_id}`)
+            axios.delete(`/removeGame/${gameId}`).then(
+                open(location, '_self')//.close()
+            )
         }   
     </script>
 </html>

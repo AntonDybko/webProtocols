@@ -23,48 +23,51 @@
                     <a href="/logout" class="navbar-brand">logout</a>
                 </nav>
 
-                <form action="/addToLibrary/<%= game._id%>" method="post">-->
+                <div action="/addToLibrary/<%= game._id%>" method="post">
                     <h1><span class="fa"></span><%= game.name%></h1>
                     <div>
                         <h3>Author:</h3>
-                        <div class="form-control"><%= game.author%></div>
+                        <div><%= game.author%></div>
                     </div>
                     <hr>
                     <div>
                         <h3>Date of publication:</h3>
-                        <div class="form-control"><%= game.date%></div>
+                        <div><%= game.date%></div>
                     </div>
                     <hr>
                     <div>
                         <h3>Description:</h3>
-                        <div class="form-control"><%= game.description%></div>
+                        <div><%= game.description%></div>
                     </div>
+                    <hr/>
                     <% if(!u_library.includes(game._id)) {%>
                         <div>
-                            <button type="submit" class="btn btn-warning btn-lg">Add to library</button>
-                            <!--<button class="btn btn-default" onclick="addToLibrary('<%= game._id%>')">
-                                <span class="fa"></span>
-                                remove from library
-                            </button>-->
+                            <button class="btn btn-warning btn-lg" onclick="addToLibrary('<%= game._id%>')">
+                                Add to library
+                            </button>
                         </div>
                     <%}else{%>
                         <div>
-                            <!--<a href="/removeFromLibrary/<%= game._id%>" class="btn btn-warning btn-lg">Remove from library</a>-->
-                            <button class="btn btn-default" onclick="removeFromLibrary('<%= game._id%>')">
-                                <span class="fa"></span>
+                            <button class="btn btn-warning btn-lg" onclick="removeFromLibrary('<%= game._id%>')">
                                 remove from library
                             </button>
                         </div>
                     <%}%>
 
-                </form>
+                </div>
             </div>
         </div>
     </body>
     <script>
         const removeFromLibrary = (gameId) =>{
-            axios.delete(`/removeFromLibrary/${gameId}`)
+            axios.delete(`/removeFromLibrary/${gameId}`).then(
+                open(location, '_self')//.close()
+            )
         }
-        
+        const addToLibrary = (gameId) =>{
+            axios.put(`/addToLibrary/${gameId}`).then(
+                open(location, '_self')//.close()
+            )
+        }
     </script>
 </html>

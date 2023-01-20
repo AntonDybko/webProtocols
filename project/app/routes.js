@@ -92,10 +92,12 @@ module.exports = function(app, passport) {
         })
     });
     app.delete('/removeGame/:game_id',isLoggedIn, permissions.isAdmin, function(req, res) { //restfull delete
+        console.log("removegame?")
         const game_id = req.params.game_id.replace('.', '')
         Game.deleteOne({_id: game_id}).then(function(){
             console.log(`Game with id ${game_id} removed`); // Success
-            res.redirect('/listOfGames');
+            //res.redirect('/listOfGames');
+            res.status(204).json(null)
         }).catch(function(error){
             console.log(error); // Failure
         });
@@ -112,16 +114,16 @@ module.exports = function(app, passport) {
         })
     });
     //users
-    app.put('/mute/:userId', isLoggedIn, permissions.isModerator, function(req, res) { //restfull put
-        User.findOne({_id: req.params.userId}, function(err, user){
+    app.put('/mute', isLoggedIn, permissions.isModerator, function(req, res) { //restfull put
+        User.findOne({_id: req.query.userId}, function(err, user){
             if(user.role == 'BASIC'){
                 server.chatRooms.forEach(x => {
-                    if(x.users.includes(req.params.userId.valueOf())){
+                    if(x.users.includes(req.query.userId.valueOf())){
                         console.log("muted")
-                        server.server.publish(x.key, `${req.params.userId}|BANNED`)
+                        server.server.publish(x.key, `${req.query.userId}|BANNED`)
                     }
                 })
-                userManage.changeRole(req.params.userId, 'MUTED', res, `/manageUsers`)
+                userManage.changeRole(req.query.userId, 'MUTED', res)
                 //userManage.changeRole(req.params.userId, 'MUTED', res, '/manageUsers')
             }else{
                 res.status(409)
@@ -129,46 +131,49 @@ module.exports = function(app, passport) {
             }
         })
     })
-    app.put('/muteFromChat/:userId', isLoggedIn, permissions.isModerator, function(req, res) { 
-        User.findOne({_id: req.params.userId}, function(err, user){
+    app.put('/muteFromChat', isLoggedIn, permissions.isModerator, function(req, res) { 
+        console.log(req.query.userId)
+        console.log(req.query.chat)
+        User.findOne({_id: req.query.userId}, function(err, user){
             if(user.role == 'BASIC'){
                 server.chatRooms.forEach(x => {
-                    if(x.users.includes(req.params.userId.valueOf())){
-                        console.log("muted")
-                        server.server.publish(x.key, `${req.params.userId}|BANNED`)
+                    if(x.users.includes(req.query.userId.valueOf())){
+                        console.log("muted from chat")
+                        server.server.publish(x.key, `${req.query.userId}|BANNED`)
                     }
                 })
-                userManage.changeRole(req.params.userId, 'MUTED', res, `/chat/${req.query.chat}`)
+                userManage.changeRole(req.query.userId, 'MUTED', res)
             }else{
                 res.status(409)
                 return res.send('User does not meet the requirements(have to be BASIC)')
             }
         })
     })
-    app.put('/makeBasic/:userId', isLoggedIn, permissions.isModerator, function(req, res) { //restfull put
-        User.findOne({_id: req.params.userId}, function(err, user){
+    app.put('/makeBasic', isLoggedIn, permissions.isModerator, function(req, res) { //restfull put
+        User.findOne({_id: req.query.userId}, function(err, user){
             if(user.role == 'MUTED' || user.role == 'MODERATOR' ){
-                userManage.changeRole(req.params.userId, 'BASIC', res, '/manageUsers')
+                userManage.changeRole(req.query.userId, 'BASIC', res)
             }else{
                 res.status(409)
                 return res.send('User does not meet the requirements(have to be MUTED or MODERATOR)')
             }
         })
     })
-    app.put('/makeModerator/:userId', isLoggedIn, permissions.isAdmin, function(req, res) { //restfull put
-        User.findOne({_id: req.params.userId}, function(err, user){
+    app.put('/makeModerator', isLoggedIn, permissions.isAdmin, function(req, res) { //restfull put
+        User.findOne({_id: req.query.userId}, function(err, user){
             if(user.role == 'BASIC'){
-                userManage.changeRole(req.params.userId, 'MODERATOR', res, '/manageUsers')
+                userManage.changeRole(req.query.userId, 'MODERATOR', res)
+                
             }else{
                 res.status(409)
                 return res.send('User does not meet the requirements(have to be BASIC)')
             }
         })
     })
-    app.put('/makeAdmin/:userId', isLoggedIn, permissions.isAdmin, function(req, res) { //restfull put
-        User.findOne({_id: req.params.userId}, function(err, user){
+    app.put('/makeAdmin', isLoggedIn, permissions.isAdmin, function(req, res) { //restfull put
+        User.findOne({_id: req.query.userId}, function(err, user){
             if(user.role == 'MODERATOR'){
-                userManage.changeRole(req.params.userId, 'ADMIN', res, '/manageUsers')
+                userManage.changeRole(req.query.userId, 'ADMIN', res)
             }else{
                 res.status(409)
                 return res.send('User does not meet the requirements(have to be MODERATOR)')
@@ -234,11 +239,12 @@ module.exports = function(app, passport) {
         }
 
     });
-    app.delete('/removeFromLibrary/:game_id', isLoggedIn, permissions.isAdmin, function(req, res) { //restfull delete
+    app.delete('/removeFromLibrary/:game_id', isLoggedIn, function(req, res) { //restfull delete
         const game_id = req.params.game_id.replace('.', '')
         console.log(game_id)
         userManage.removeFromLibrary(game_id, req.user._id)
-        res.redirect('/library');
+        //res.redirect('/library');
+        res.status(204).send("successfully remove from library")
 
     });
 
@@ -265,15 +271,29 @@ module.exports = function(app, passport) {
         gameManage.addGame(req.body)
         res.redirect('/manageGames');
     });
-    app.put('/updateGame/:game_id',isLoggedIn, permissions.isAdmin, function(req, res) { //restfull put
-        const game_id = req.params.game_id.replace('.', '')
+    app.put('/updateGame',isLoggedIn, permissions.isAdmin, function(req, res) { //restfull put
+        const game_id = req.query.game_id.replace('.', '')
         console.log(req.body) //???
         gameManage.updateGame(game_id, req.body)
-        res.redirect('/listOfGames');
+        //res.redirect('/listOfGames');
+        res.status(200).json(req.body);
     });
     //zrobić jako link...!!!!!
-    app.post('/searchByName',isLoggedIn, function(req, res){
+    /*app.post('/searchByName',isLoggedIn, function(req, res){
         Game.find({"name": { $regex: `${req.body.name}`}}, function(err, games){
+            res.render('games/searchedGames.ejs',{
+                games: games,
+                user: {
+                    _id: req.user._id,
+                    email: req.user.email,
+                    library: req.user.library,
+                    role: req.user.role 
+                }
+            })
+        })
+    });*/
+    app.get('/searchByName',isLoggedIn, function(req, res){
+        Game.find({"name": { $regex: `${req.query.wzorec}`}}, function(err, games){
             res.render('games/searchedGames.ejs',{
                 games: games,
                 user: {
@@ -289,7 +309,8 @@ module.exports = function(app, passport) {
     app.put('/addToLibrary/:game_id',isLoggedIn, function(req, res){ //restfull put
         const game_id = req.params.game_id.replace('.', '')
         userManage.addToLibrary(game_id, req.user)
-        res.redirect('/library')
+        //res.redirect('/library')
+        res.status(200).send('successfully added to library')
     });
     
 

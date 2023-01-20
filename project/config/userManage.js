@@ -1,6 +1,6 @@
 var User = require('../app/models/user.js');
 module.exports = {
-    changeRole:function(user_id, role, res, page){
+    changeRole:function(user_id, role, res){
         User.findOneAndUpdate(
             {_id: user_id}, 
             {role: role}, 
@@ -9,7 +9,8 @@ module.exports = {
                 console.log(err)
             }
             else{
-                res.redirect(page)
+                //res.redirect(page)
+                res.status(200).send('role changed')
                 console.log(success);
             }
         })

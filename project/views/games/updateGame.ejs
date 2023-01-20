@@ -51,7 +51,9 @@
                 author: author,
                 description: description
             }
-            axios.put(`/updateGame/${gameId}`, body)
+            axios.put(`/updateGame?game_id=${gameId}`, body).then(
+                window.location.replace('/listOfGames')
+            )
         }
     </script>
 </html>

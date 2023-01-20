@@ -4,6 +4,7 @@
     <title>Main menu</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
     <style>
         body        { padding-top:80px; }
     </style>
@@ -29,10 +30,10 @@
         <div class="col-sm-6 col-sm-offset-3">
             <h1><span class="fa"></span>Games</h1>
             <div>
-                <form action="/searchByName" method="post">
-                    <input type="text" class="form-control" name="name">
-                    <button type="submit" class="btn btn-warning btn-lg">Search</button>
-                </form>
+                <div>
+                    <input type="text" class="form-control" name="name" id="searched">
+                    <button class="btn btn-warning btn-lg" onclick="searchGames(document.getElementById('searched').value)">Search</button>
+                </div>
             </div>
             <hr>
             <ul>
@@ -49,4 +50,13 @@
     </div>
 </div>
 </body>
+<script>
+    searchGames = (searched) => {
+        console.log(searched)
+        window.location.href=`/searchByName?wzorec=${searched}`
+        /*axios.get(`/searchByName?wzorec=${searched}`).then((res)=>{
+            res.render()
+        })*/
+    }
+</script>
 </html>
