@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+    <title>Main menu</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <style>
+        body        { padding-top:80px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron text-center">
+        <h1><span class="fa fa-lock"></span>Store</h1>
+        <div>
+            <a href="/logout" class="btn btn-default"><span class="fa fa-user"></span>Logout</a>
+        </div>
+        <a href="/library" class="btn btn-default"><span class="fa fa-user"></span>LIBRARY</a>
+        <% if(user.role === 'ADMIN') { %>
+            <div><a href="/manageGames" class="manageUsers" role="button">manageGames</a></div>
+        <% } %>
+    </div>
+    <hr>
+    <div class="container">
+        <div class="col-sm-6 col-sm-offset-3">
+            <h1><span class="fa"></span>Games</h1>
+            <div>
+                <div>
+                    <input type="text" class="form-control" name="name" id="searched">
+                    <button class="btn btn-warning btn-lg" onclick="searchGames(document.getElementById('searched').value)">Search</button>
+                </div>
+            </div>
+            <hr>
+            <ul>
+                <%gamesList.forEach( game => {%>
+                    <li>
+                        <a href="/gameInfo/<%= game._id%>" class="btn btn-default">
+                            <%= game.name%>
+                        </a>
+                    </li>
+                <%})%>
+            </ul>
+
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    searchGames = (searched) => {
+        console.log(searched)
+        window.location.href=`/searchByName?wzorec=${searched}`
+        /*axios.get(`/searchByName?wzorec=${searched}`).then((res)=>{
+            res.render()
+        })*/
+    }
+</script>
+</html>
