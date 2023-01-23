@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Node Authentication</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script> <!-- load axios test-->
+        <style>
+            body        { padding-top:80px; }
+            .menu {
+                background-color: lightgray;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <nav class="navbar navbar-light bg-light menu">
+                    <a href="/main" class="navbar-brand">main page</a>
+                    <a href="/logout" class="navbar-brand">logout</a>
+                </nav>
+                <!--<form action="/updateGame/<%= game._id%>" method="post">-->
+                <div>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <div class="form-control"><%= game.name%></div>
+                        <input type="text" class="form-control" name="name" required="required" value="<%= game.name%>" id="name">
+                    </div>
+                    <div class="form-group">
+                        <label>Author</label>
+                        <div class="form-control"><%= game.author%></div>
+                        <input type="text" class="form-control" name="author" required="required" value="<%= game.author%>" id="author">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of publish</label>
+                        <div class="form-control"><%= game.date%></div>
+                        <input type="date" class="form-control" name="date" required="required" value="<%= game.date%>" id="date">
+                    </div>
+                    <hr>
+                    <div>
+                        <h3>Description:</h3>
+                        <div class="form-control"><%= game.description%></div>
+                        <input type="text" class="form-control" name="description" value="<%= game.description%>" id="description">
+                    </div>
+                    <div>
+                        <h3>Price:</h3>
+                        <div class="form-control"><%= game.price%></div>
+                        <input type="number" step="0.01" class="form-control" name="price" value="<%= game.price%>" id="price">
+                    </div>
+                    <button class="btn btn-warning btn-lg" onclick="updateGame('<%= game._id%>')">Update game</button>
+                    <!--<button type="submit" class="btn btn-warning btn-lg">Update game</button>-->
+                <!--</form>-->
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        const updateGame = (gameId) =>{
+            const name = document.getElementById('name').value
+            const date = document.getElementById('date').value
+            const price = document.getElementById('price').value
+            const author = document.getElementById('author').value
+            const description = document.getElementById('description').value
+            const body = {
+                name: name,
+                author: author,
+                date: date, 
+                description: description,
+                price: price
+            }
+            axios.put(`/updateGame?game_id=${gameId}`, body).then(()=>{
+                window.location.replace('/listOfGames')
+            })
+        }
+    </script>
+</html>
