@@ -5,11 +5,12 @@ module.exports = {
     addGame: function(gameBody, neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
-            "CREATE (game:Game{_id: $id, name: $name, author: $author, date: $date, description: $description, price: $price}) RETURN game",
+            "CREATE (game:Game{_id: $id, name: $name, author: $author, date: $date, genre: $genre, description: $description, price: $price}) RETURN game",
             {   
                 id: uuidv4(),
                 name: gameBody.name,
                 author: gameBody.author,
+                genre: gameBody.genre,
                 date: gameBody.date,
                 description: gameBody.description,
                 price: gameBody.price
@@ -22,12 +23,13 @@ module.exports = {
     updateGame:function(game_id, body, neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
-            "MATCH (game:Game {_id: $id}) SET game.name=$name, game.author=$author, game.date=$date, game.description=$description, game.price=$price RETURN game",
+            "MATCH (game:Game {_id: $id}) SET game.name=$name, game.author=$author, game.date=$date, game.genre=$genre, game.description=$description, game.price=$price RETURN game",
             {   
                 id: game_id,
                 name: body.name,
                 author: body.author,
                 date: body.date,
+                genre: body.genre,
                 description: body.description,
                 price: body.price
             }

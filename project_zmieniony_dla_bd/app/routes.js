@@ -72,13 +72,11 @@ module.exports = function(app, passport, neo_driver) {
         }
         res.render('users/edit_profile.ejs')
     });
-    app.get('/change_password', isLoggedIn, async function(req, res) {
-        if (req.query.error != undefined){
-            res.locals.error = req.query.error
-        }else{
-            res.locals.error = ""
-        }
-        res.render('users/change_password.ejs')
+    app.get('/profile', isLoggedIn, async function(req, res) {
+        res.render('users/profile.ejs')
+    });
+    app.get('/historia_zamowien', isLoggedIn, async function(req, res) {
+        res.render('users/historia_zamowien.ejs')
     });
 
     //games

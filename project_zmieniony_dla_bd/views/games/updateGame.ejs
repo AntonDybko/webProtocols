@@ -39,6 +39,11 @@
                         <div class="form-control"><%= game.date%></div>
                         <input type="date" class="form-control" name="date" required="required" value="<%= game.date%>" id="date">
                     </div>
+                    <div class="form-group">
+                        <label>Genre</label>
+                        <div class="form-control"><%= game.date%></div>
+                        <input type="date" class="form-control" name="genre" required="required" value="<%= game.date%>" id="genre">
+                    </div>
                     <hr>
                     <div>
                         <h3>Description:</h3>
@@ -64,12 +69,14 @@
             const price = document.getElementById('price').value
             const author = document.getElementById('author').value
             const description = document.getElementById('description').value
+            const genre = document.getElementById('genre').value
             const body = {
                 name: name,
                 author: author,
                 date: date, 
                 description: description,
-                price: price
+                price: price,
+                genre: genre,
             }
             axios.put(`/updateGame?game_id=${gameId}`, body).then(()=>{
                 window.location.replace('/listOfGames')
