@@ -28,7 +28,7 @@ module.exports = {
                         })
                     }).then(results => {
                         let dbUser = _.get(results.records[0].get('user'), 'properties');
-                        dbUser.password="secret"
+                        //dbUser.password="secret"
                         console.log(dbUser)
                         return dbUser
                     })
@@ -81,7 +81,7 @@ module.exports = {
                         new_key: new_key
                     }).then(()=>{
                         dbUser.api_key = new_key
-                        dbUser.password="secret"
+                        //dbUser.password="secret"
                         return dbUser
                         //console.log("userObject", userObject.records)
                         //return _.get(userObject.records[0].get('user'), 'properties');

@@ -72,6 +72,14 @@ module.exports = function(app, passport, neo_driver) {
         }
         res.render('users/edit_profile.ejs')
     });
+    app.get('/change_password', isLoggedIn, async function(req, res) {
+        if (req.query.error != undefined){
+            res.locals.error = req.query.error
+        }else{
+            res.locals.error = ""
+        }
+        res.render('users/change_password.ejs')
+    });
 
     //games
     app.get('/manageGames',isLoggedIn, permissions.isAdmin, function(req, res) {
@@ -244,9 +252,7 @@ module.exports = function(app, passport, neo_driver) {
         })
     });
 
-    app.post('/edit_profile', isLoggedIn, async function(req, res) {
-        //if(req.body.password != undefined){
-        console.log(req.body)
+    app.put('/edit_profile', isLoggedIn, function(req, res) {
         if(req.body.password === req.body.password_2){
             const neo_session = neo_driver.session()
             neo_session.run(
@@ -268,22 +274,56 @@ module.exports = function(app, passport, neo_driver) {
                         console.log(newUser)
                         const newAccessToken = jwt.sign(newUser, newUser.api_key, { expiresIn: '1d'})
                         res.cookie('accessToken', newAccessToken)
-                        res.redirect('/profile')
+                        //res.redirect('/profile')
+                        res.sendStatus(200)
                     }).catch((error)=>{
                         console.log(error)
                     })
                 }else{
                     let error="Wrong password"
-                    res.redirect(`/edit_profile?error=${error}`)
+                    res.status(400).json({error: error});
                 }
             }).catch((err)=>{
                 console.log(err)
             })
         }else{
             let error = "Passwords are not equal"
-            res.redirect(`/edit_profile?error=${error}`)
+            res.status(400).json({error: error});
         }
-        //}
+    });
+    app.put('/change_password', isLoggedIn, function(req, res) {
+        if(req.body.new_password === req.body.new_password_2){
+            const neo_session = neo_driver.session();
+            neo_session.run(
+                "MATCH (user:User {_id: $_id}) RETURN user",
+                {_id: req.cookies._id}
+            ).then(result => {
+                if(bcrypt.compareSync(req.body.password, _.get(result.records[0].get('user'), 'properties').password)){
+                    neo_session.run(
+                        "MATCH (user:User {_id: $_id}) SET user.password=$new_password RETURN user",
+                        {
+                            _id: req.cookies._id,
+                            new_password: bcrypt.hashSync(req.body.new_password, bcrypt.genSaltSync(8), null),
+                        }
+                    ).then((user)=>{
+                        const newUser = _.get(user.records[0].get('user'), 'properties')
+                        const newAccessToken = jwt.sign(newUser, newUser.api_key, { expiresIn: '1d'})
+                        res.cookie('accessToken', newAccessToken)
+                        res.sendStatus(200)
+                    }).catch((error)=>{
+                        console.log(error)
+                    })
+                }else{
+                    let error="Wrong password"
+                    res.status(400).json({error: error});
+                }
+            }).catch((err)=>{
+                console.log(err)
+            })
+        }else{
+            let error = "New passwords are not equal"
+            res.status(400).json({error: error});
+        }
     });
 
     
@@ -297,8 +337,6 @@ module.exports = function(app, passport, neo_driver) {
         gameManage.updateGame(game_id, req.body, neo_driver).then(()=>{
             res.status(200).json(req.body);
         })
-        //res.redirect('/listOfGames');
-        //res.status(200).json(req.body);
     });
 
     app.get('/searchByName',isLoggedIn, function(req, res){

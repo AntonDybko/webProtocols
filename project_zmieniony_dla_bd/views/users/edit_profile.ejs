@@ -4,6 +4,7 @@
         <title>Profile</title>
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
         <style>
             body        { padding-top:80px; }
             .menu {
@@ -24,8 +25,8 @@
                 <h1><span class="fa"></span>Edit your profile</h1>
                 <%if(error.length !=0){%>
                     <div class="alert alert-danger"><%= error%></div>
-                <% } %>
-                <form action="/edit_profile" method="post">
+                <%}%>
+                <div>
                     <div class="form-group">
                         <label>Login</label>
                         <div><%= user.login %></div>
@@ -55,14 +56,42 @@
                         <input type="password" class="form-control" name="password_2" required="required" id="password_2">
                     </div>
                     <div>
-                        <button type="submit" class="btn btn-warning btn-lg">Save Changes</button>
+                        <button class="btn btn-warning btn-lg" onclick="updateUser('<%= user._id%>')">Save Changes</button>
                     </div>
+                    <hr/>
                     <div>
                         <a href="/change_password" class="btn btn-default">Change password</a>
-                        <a href="/profile" class="btn btn-default">Back to your profile</a> <!--jeszcze nie została zrobiona-->
+                        <a href="/profile" class="btn btn-default">Back to your profile</a>
                     </div>
                 </div>
             </div>
         </div>
     </body>
+    <script>
+        const updateUser = (gameId) =>{
+            const login = document.getElementById('login').value
+            const email = document.getElementById('email').value
+            const address = document.getElementById('address').value
+            const phone = document.getElementById('phone').value
+            const password = document.getElementById('password').value
+            const password_2 = document.getElementById('password_2').value
+            const body = {
+                login: login,
+                email: email,
+                address: address, 
+                phone: phone,
+                password: password,
+                password_2: password_2
+            }
+            axios.put(`/edit_profile`, body).then((res)=>{
+                console.log(res)
+                return res.data
+            }).then((data)=>{
+                window.location.replace('/profile')
+            }).catch(error => {
+                console.log(error.response.data)
+                window.location.replace(`/edit_profile?error=${error.response.data.error}`)
+            })
+        }
+    </script>
 </html>
