@@ -4,8 +4,9 @@ var User = require('../app/models/user.js');
 var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
 var jwt = require('jsonwebtoken');
-var randomstring = require("randomstring");
+//var randomstring = require("randomstring");
 const { _  }= require('underscore');
+var bcrypt = require('bcryptjs');
 //const e = require("connect-flash");
 //const server = require("../server");
 //const { get, result } = require("underscore");
@@ -15,20 +16,15 @@ const { _  }= require('underscore');
 
 module.exports = function(app, passport, neo_driver) {
     app.get('/', function(req, res) {
-        //console.log(JSON.stringify(req.headers))
-        //console.log(req.header('x-api-key'))
-        console.log(req.cookies.x_api_key)
-        if(req.user===undefined || res.logout != undefined){
+        //console.log(req.user)
+        if(req.cookies.accessToken === undefined){
             res.render('index.ejs');
         }else{
             res.redirect('/main')
         }
     });
     app.get('/login', function(req, res) {
-        // render the page and pass in any flash data if it exists
-        //res.render('login.ejs', { message: req.flash('loginMessage') });
         const error = req.query.error
-        // render the page and pass in any flash data if it exists
         if(error != undefined) {
             res.render('login.ejs', { message: error });
         }
@@ -38,7 +34,6 @@ module.exports = function(app, passport, neo_driver) {
     });
     app.get('/signup', function(req, res) {
         const error = req.query.error
-        // render the page and pass in any flash data if it exists
         if(error != undefined) {
             res.render('signup.ejs', { message: error });
         }
@@ -47,7 +42,8 @@ module.exports = function(app, passport, neo_driver) {
         }
     });
     app.get('/logout', function(req, res) {
-        res.clearCookie("x_api_key");
+        res.clearCookie("_id");
+        res.clearCookie("accessToken");
         req.session.destroy(function(){
             res.redirect('/')
         })
@@ -64,6 +60,17 @@ module.exports = function(app, passport, neo_driver) {
                 gamesList: games,
             })
         })
+    });
+    app.get('/profile', isLoggedIn, async function(req, res) {
+        res.render('users/profile.ejs')
+    });
+    app.get('/edit_profile', isLoggedIn, async function(req, res) {
+        if (req.query.error != undefined){
+            res.locals.error = req.query.error
+        }else{
+            res.locals.error = ""
+        }
+        res.render('users/edit_profile.ejs')
     });
 
     //games
@@ -118,16 +125,6 @@ module.exports = function(app, passport, neo_driver) {
         }).catch(function(error){
             console.log(error);
         })
-        /*await neo_session.run("MATCH (game:Game {id: $game_id})-[r:COMMENT]->() DELETE r", { game_id: game_id}).then(()=>{
-        }).catch(function(error){
-            console.log(error);
-        })
-        await neo_session.run("MATCH ()-[r:ZAMOWIENIE]->(game:Game {id: $game_id}) DELETE r, game RETURN game", { game_id: game_id}).then(results=>{
-            console.log(results.records)
-            res.status(204).json(null)
-        }).catch(function(error){
-            console.log(error);
-        }) */
     });
     app.get('/gameInfo/:game_id',isLoggedIn, function(req, res) {
         const game_id = req.params.game_id.replace('.', '')
@@ -141,10 +138,10 @@ module.exports = function(app, passport, neo_driver) {
         })
     });
 
-    app.get('/logout', function(req, res) {
+    /*app.get('/logout', function(req, res) {
         req.logout();
         res.redirect('/');
-    });
+    });*/
     app.get('/library',isLoggedIn, function(req, res){
         const yourGames = []
         if(req.user.library.length===0){
@@ -183,54 +180,45 @@ module.exports = function(app, passport, neo_driver) {
 
     async function isLoggedIn(req, res, next){
         const token = req.cookies.accessToken
-        console.log("authHeader: ",token)
-        const api_key = req.cookies.x_api_key;
-        if(api_key != undefined && token !=null){
-            jwt.verify(token, api_key, (err, user) =>{
-                if (err) res.redirect('/');
-                else{
-                    res.locals.user = user
-                    return next();
-                } 
+        //const api_key = req.cookies.x_api_key;
+        const _id = req.cookies._id;
+        if(_id != undefined && token !=undefined){
+            const neo_session = neo_driver.session()
+            neo_session.run(
+                "MATCH (user:User {_id: $_id}) RETURN user",
+                {_id: _id}
+            ).then((result) => {
+                const user = _.get(result.records[0].get('user'), 'properties')
+                const api_key = user.api_key
+                jwt.verify(token, api_key, (err, user) =>{
+                    if (err) res.redirect('/logout');
+                    else{
+                        res.locals.user ={
+                            _id: user._id,
+                            login: user.login,
+                            email: user.email,
+                            address: user.address,
+                            phone: user.phone,
+                            role: user.role,
+                            favourite: user.favourite
+                        } 
+                        return next();
+                    } 
+                })
             })
         }else{
-            res.redirect('/')
+            res.redirect('/logout')
         }
 
     }
-    /*async function isLoggedIn(req, res, next){
-        const token = req.cookies.accessToken
-        console.log("authHeader: ",token)
-        const api_key = req.cookies.x_api_key;
-        if(api_key != undefined && token !=null){
-            neo_session.run("MATCH (user:User {api_key: $api_key}) RETURN user",{ api_key: api_key}).then((result)=>{
-                //if (result.records !=)
-                console.log(result.records)
-                if(result.records.length !=0){
-                    jwt.verify(token, api_key, (err, user) =>{
-                        if (err) res.redirect('/');
-                        else return next();
-                    })
-                }else{
-                    res.redirect('/')
-                }
-            })
-        }else{
-            res.redirect('/')
-        }
 
-    }*/
     app.post('/signup', function(req, res){
         passport.register(neo_session, req.body.email, req.body.password).then(user =>{
-            const key = randomstring.generate({
-                length: 60,
-                charset: 'hex'
-            })
+            const key = user.api_key
             const accessToken = jwt.sign(user, key, { expiresIn: '1d'})
 
             res.cookie('accessToken', accessToken)
-            //res.cookie('x_api_key', user.api_key)
-            res.cookie('x_api_key', key)
+            res.cookie('_id', user._id)
 
             res.redirect('/main')
         }).catch((err)=>{
@@ -242,22 +230,60 @@ module.exports = function(app, passport, neo_driver) {
     app.post('/login', function(req, res){
 
         passport.login(neo_driver, req.body.email, req.body.password).then(user =>{
-            const key = randomstring.generate({
-                length: 60,
-                charset: 'hex'
-            })
-
+            console.log("login form user:", user)
+            const key = user.api_key
             const accessToken = jwt.sign(user, key, { expiresIn: '1d'})
 
-            //res.cookie('x_api_key', user.api_key)
             res.cookie('accessToken', accessToken)
-            res.cookie('x_api_key', key)
+            res.cookie('_id', user._id)
             
             res.redirect('/main')
         }).catch((err)=>{
-            console.log(err)
+            console.log("err in /login", err)
             res.redirect(`/login?error=${err.error}`)
         })
+    });
+
+    app.post('/edit_profile', isLoggedIn, async function(req, res) {
+        //if(req.body.password != undefined){
+        console.log(req.body)
+        if(req.body.password === req.body.password_2){
+            const neo_session = neo_driver.session()
+            neo_session.run(
+                "MATCH (user:User {_id: $_id}) RETURN user",
+                {_id: req.cookies._id}
+            ).then(result => {
+                if(bcrypt.compareSync(req.body.password, _.get(result.records[0].get('user'), 'properties').password)){
+                    neo_session.run(
+                        "MATCH (user:User {_id: $_id}) SET user.login=$newLogin, user.email=$newEmail, user.address=$newAddress, user.phone=$newPhone RETURN user",
+                        {
+                            _id: req.cookies._id,
+                            newLogin: req.body.login,
+                            newEmail: req.body.email,
+                            newAddress: req.body.address,
+                            newPhone: req.body.phone
+                        }
+                    ).then((user)=>{
+                        const newUser = _.get(user.records[0].get('user'), 'properties')
+                        console.log(newUser)
+                        const newAccessToken = jwt.sign(newUser, newUser.api_key, { expiresIn: '1d'})
+                        res.cookie('accessToken', newAccessToken)
+                        res.redirect('/profile')
+                    }).catch((error)=>{
+                        console.log(error)
+                    })
+                }else{
+                    let error="Wrong password"
+                    res.redirect(`/edit_profile?error=${error}`)
+                }
+            }).catch((err)=>{
+                console.log(err)
+            })
+        }else{
+            let error = "Passwords are not equal"
+            res.redirect(`/edit_profile?error=${error}`)
+        }
+        //}
     });
 
     

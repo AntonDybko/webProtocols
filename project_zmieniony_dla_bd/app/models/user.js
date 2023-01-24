@@ -17,17 +17,20 @@ module.exports = {
                     }
                 }
                 else {
-                    return session.run('CREATE (user:User {_id: $id, login: $email, email: $email, password: $password, address: "", phone: "", favourite: [], role: "BASIC"}) RETURN user', 
+                    return session.run('CREATE (user:User {_id: $id, login: $email, email: $email, password: $password, api_key: $api_key, address: "", phone: "", favourite: [], role: "BASIC"}) RETURN user', 
                     {
                         id: uuidv4(),
                         email: email,
                         password: bcrypt.hashSync(password, bcrypt.genSaltSync(8), null),
-                        /*api_key: randomstring.generate({
+                        api_key: randomstring.generate({
                             length: 60,
                             charset: 'hex'
-                        })*/
+                        })
                     }).then(results => {
-                        return _.get(results.records[0].get('user'), 'properties');
+                        let dbUser = _.get(results.records[0].get('user'), 'properties');
+                        dbUser.password="secret"
+                        console.log(dbUser)
+                        return dbUser
                     })
                 }
             })//.catch(err=> console.log(err));
@@ -61,27 +64,33 @@ module.exports = {
                     }
                 }
                 else {
-                    var dbUser = _.get(results.records[0].get('user'), 'properties');
+                    let dbUser = _.get(results.records[0].get('user'), 'properties');
                     if (! bcrypt.compareSync(password, dbUser.password)) {
                         throw {
                             error: 'wrong password',
                             status: 400
                         }
-                    }else return dbUser
-                    /*const new_key =randomstring.generate({
+                    }//else return dbUser
+                    const new_key =randomstring.generate({
                         length: 60,
                         charset: 'hex'
                     })
-                    return await session.run("MATCH (user:User) WHERE ID(user)=$userId SET user.api_key = $new_key RETURN user", {
-                        userId: dbUser.id,
+                    return await session.run("MATCH (user:User) WHERE user._id=$userId SET user.api_key = $new_key", {
+                        //_id, login, email, password, api_key, address, phone, favourite, role}
+                        userId: dbUser._id,
                         new_key: new_key
                     }).then(()=>{
-                        return { 
-                            id: dbUser.id,
-                            email: dbUser,
-                            api_key: new_key 
-                        }
-                    })*/
+                        dbUser.api_key = new_key
+                        dbUser.password="secret"
+                        return dbUser
+                        //console.log("userObject", userObject.records)
+                        //return _.get(userObject.records[0].get('user'), 'properties');
+                        /*return { 
+                            _id: dbUser._id,
+                            //email: dbUser,
+                            //api_key: new_key 
+                        }*/
+                    })
                     //return { token: new_key }
                     /*return {
                         token: _.get(dbUser, 'api_key')
