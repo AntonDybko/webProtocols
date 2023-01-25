@@ -4,6 +4,7 @@ var User = require('../app/models/user.js');
 var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
 var jwt = require('jsonwebtoken');
+const fs = require('fs');
 //var randomstring = require("randomstring");
 const { _  }= require('underscore');
 var bcrypt = require('bcryptjs');
@@ -49,22 +50,16 @@ module.exports = function(app, passport, neo_driver) {
         })
     });
     app.get('/main', isLoggedIn, async function(req, res) {
-        const neo_session = neo_driver.session()
-        neo_session.run("MATCH (game:Game) RETURN game")
-        .then(results => {
-            const games = []
-            results.records.forEach(record => {
-                games.push(_.get(record.get('game'), 'properties'))
-            })
-            res.render('main.ejs',{
-                gamesList: games,
-            })
+        const games = await gameManage.getGamesInArray(neo_driver);
+        console.log(games);
+        res.render('main.ejs',{
+            gamesList: games,
         })
     });
-    app.get('/profile', isLoggedIn, async function(req, res) {
+    app.get('/profile', isLoggedIn, function(req, res) {
         res.render('users/profile.ejs')
     });
-    app.get('/edit_profile', isLoggedIn, async function(req, res) {
+    app.get('/edit_profile', isLoggedIn, function(req, res) {
         if (req.query.error != undefined){
             res.locals.error = req.query.error
         }else{
@@ -80,6 +75,10 @@ module.exports = function(app, passport, neo_driver) {
     });
     app.get('/importGamesFromJsonFile', isLoggedIn,  function(req, res) {
         res.render('games/importGamesFromJsonFile.ejs')
+    })
+    app.get('/exportGamesToJsonFile', isLoggedIn,  async function(req, res) {
+        const games = await gameManage.getGamesInArray(neo_driver)
+        res.status(200).send(games)
     })
     /*(app.get('/exportGamesFromJsonFile', isLoggedIn,  function(req, res) {
         res.render('games/exportGamesFromJsonFile.ejs')

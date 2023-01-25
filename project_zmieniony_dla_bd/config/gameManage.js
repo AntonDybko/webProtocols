@@ -38,16 +38,16 @@ module.exports = {
             console.log(_.get(results.records[0].get('game'), 'properties'));
             return _.get(results.records[0].get('game'), 'properties');
         })
-        /*Game.updateOne({_id: game_id}, {
-            author: body.author,
-            description: body.description
-        }, function(err, docs){
-            if (err){
-                console.log(err)
-            }
-            else{
-                console.log("Updated Docs : ", docs);
-            }
-        })*/
+    },
+    getGamesInArray:function(neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run("MATCH (game:Game) RETURN game")
+        .then(results => {
+            const games = []
+            results.records.forEach(record => {
+                games.push(_.get(record.get('game'), 'properties'))
+            })
+            return games
+        })
     }
 }
