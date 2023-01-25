@@ -36,7 +36,7 @@
             <hr>
             <ul>
                 <%gamesList.forEach( game => {%>
-                    <li>
+                    <li id="<%= game._id%>">
                         <a href="/gameInfo/<%= game._id%>" class="btn btn-default">
                             <%= game.title%>
                         </a>

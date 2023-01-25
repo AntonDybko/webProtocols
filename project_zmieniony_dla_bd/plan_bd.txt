@@ -21,7 +21,7 @@ rejestracja:
     adres dostawy
     numer telefonu
     ulubione_gry: []
-    (user) - [r:zamowienie] -> (zamowienie(id, status, miejsce_odbioru, gra))
+    (user) - [r:zamowienie] -> (zamowienie(_id, status, miejsce_odbioru, game))
     role: autorole BASIC
 zamowienie:
     id

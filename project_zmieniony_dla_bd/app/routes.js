@@ -4,10 +4,10 @@ var User = require('../app/models/user.js');
 var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
 var jwt = require('jsonwebtoken');
-const fs = require('fs');
 //var randomstring = require("randomstring");
 const { _  }= require('underscore');
 var bcrypt = require('bcryptjs');
+const zamowienieManage = require('../config/zamowienieManage')
 //const e = require("connect-flash");
 //const server = require("../server");
 //const { get, result } = require("underscore");
@@ -73,16 +73,19 @@ module.exports = function(app, passport, neo_driver) {
     app.get('/historia_zamowien', isLoggedIn,  function(req, res) {
         res.render('users/historia_zamowien.ejs')
     });
-    app.get('/importGamesFromJsonFile', isLoggedIn,  function(req, res) {
+    app.get('/importGamesFromJsonFile', isLoggedIn,  permissions.isAdmin, function(req, res) {
         res.render('games/importGamesFromJsonFile.ejs')
     })
-    app.get('/exportGamesToJsonFile', isLoggedIn,  async function(req, res) {
+    app.get('/exportGamesToJsonFile', isLoggedIn, permissions.isAdmin, async function(req, res) {
         const games = await gameManage.getGamesInArray(neo_driver)
         res.status(200).send(games)
     })
-    /*(app.get('/exportGamesFromJsonFile', isLoggedIn,  function(req, res) {
-        res.render('games/exportGamesFromJsonFile.ejs')
-    })*/
+    app.get('/historia_zamowien', isLoggedIn, permissions.isAdmin, async function(req, res) {
+        const zamowienia = await zamowienieManage.getallZamowieniaOfUser(req.cookies._id, neo_driver);
+        res.render('user/historia_zamowien.ejs', {
+            zamowienia: zamowienia
+        })
+    })
 
     //games
     app.get('/manageGames',isLoggedIn, permissions.isAdmin, function(req, res) {
