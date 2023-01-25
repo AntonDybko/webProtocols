@@ -72,12 +72,18 @@ module.exports = function(app, passport, neo_driver) {
         }
         res.render('users/edit_profile.ejs')
     });
-    app.get('/profile', isLoggedIn, async function(req, res) {
+    app.get('/profile', isLoggedIn,  function(req, res) {
         res.render('users/profile.ejs')
     });
-    app.get('/historia_zamowien', isLoggedIn, async function(req, res) {
+    app.get('/historia_zamowien', isLoggedIn,  function(req, res) {
         res.render('users/historia_zamowien.ejs')
     });
+    app.get('/importGamesFromJsonFile', isLoggedIn,  function(req, res) {
+        res.render('games/importGamesFromJsonFile.ejs')
+    })
+    /*(app.get('/exportGamesFromJsonFile', isLoggedIn,  function(req, res) {
+        res.render('games/exportGamesFromJsonFile.ejs')
+    })*/
 
     //games
     app.get('/manageGames',isLoggedIn, permissions.isAdmin, function(req, res) {
@@ -336,6 +342,22 @@ module.exports = function(app, passport, neo_driver) {
             res.status(200).json(req.body);
         })
     });
+    app.post('/importGamesFromJsonFile',isLoggedIn, permissions.isAdmin, function(req, res){
+        //console.log(req.body)
+        req.body.forEach(game=>{
+            let gameToAdd = {
+                title: game.title,
+                publisher: game.publisher,
+                genre: game.genre,
+                release_date: game.release_date,
+                short_description: game.short_description,
+                price: game.price
+            }
+            console.log(gameToAdd)
+            gameManage.addGame(gameToAdd, neo_driver)
+        })
+        res.sendStatus(201)
+    })
 
     app.get('/searchByName',isLoggedIn, function(req, res){
         Game.find({"name": { $regex: `${req.query.wzorec}`}}, function(err, games){

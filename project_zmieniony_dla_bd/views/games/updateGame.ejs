@@ -25,30 +25,30 @@
                 <!--<form action="/updateGame/<%= game._id%>" method="post">-->
                 <div>
                     <div class="form-group">
-                        <label>Name</label>
-                        <div class="form-control"><%= game.name%></div>
-                        <input type="text" class="form-control" name="name" required="required" value="<%= game.name%>" id="name">
+                        <label>Title</label>
+                        <div class="form-control"><%= game.title%></div>
+                        <input type="text" class="form-control" name="title" required="required" value="<%= game.title%>" id="title">
                     </div>
                     <div class="form-group">
-                        <label>Author</label>
-                        <div class="form-control"><%= game.author%></div>
-                        <input type="text" class="form-control" name="author" required="required" value="<%= game.author%>" id="author">
+                        <label>Publisher</label>
+                        <div class="form-control"><%= game.publisher%></div>
+                        <input type="text" class="form-control" name="publisher" required="required" value="<%= game.publisher%>" id="publisher">
                     </div>
                     <div class="form-group">
-                        <label>Date of publish</label>
-                        <div class="form-control"><%= game.date%></div>
-                        <input type="date" class="form-control" name="date" required="required" value="<%= game.date%>" id="date">
+                        <label>Release date</label>
+                        <div class="form-control"><%= game.release_date%></div>
+                        <input type="date" class="form-control" name="release_date" required="required" value="<%= game.release_date%>" id="release_date">
                     </div>
                     <div class="form-group">
                         <label>Genre</label>
-                        <div class="form-control"><%= game.date%></div>
-                        <input type="date" class="form-control" name="genre" required="required" value="<%= game.date%>" id="genre">
+                        <div class="form-control"><%= game.genre%></div>
+                        <input type="date" class="form-control" name="genre" required="required" value="<%= game.genre%>" id="genre">
                     </div>
                     <hr>
                     <div>
-                        <h3>Description:</h3>
-                        <div class="form-control"><%= game.description%></div>
-                        <input type="text" class="form-control" name="description" value="<%= game.description%>" id="description">
+                        <h3>Short description:</h3>
+                        <div class="form-control"><%= game.short_description%></div>
+                        <input type="text" class="form-control" name="short_description" value="<%= game.short_description%>" id="short_description">
                     </div>
                     <div>
                         <h3>Price:</h3>

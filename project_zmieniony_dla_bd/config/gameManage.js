@@ -5,32 +5,32 @@ module.exports = {
     addGame: function(gameBody, neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
-            "CREATE (game:Game{_id: $id, name: $name, author: $author, date: $date, genre: $genre, description: $description, price: $price}) RETURN game",
+            "CREATE (game:Game{_id: $id, title: $title, publisher: $publisher, release_date: $release_date, genre: $genre, short_description: $short_description, price: $price}) RETURN game",
             {   
                 id: uuidv4(),
-                name: gameBody.name,
-                author: gameBody.author,
+                title: gameBody.title,
+                publisher: gameBody.publisher,
                 genre: gameBody.genre,
-                date: gameBody.date,
-                description: gameBody.description,
+                release_date: gameBody.release_date,
+                short_description: gameBody.short_description,
                 price: gameBody.price
             }
         ).then((results)=>{
-            console.log(gameBody.name + " saved to games store.")
+            console.log(gameBody.title + " saved to games store.")
             return _.get(results.records[0].get('game'), 'properties');
         })
     },
     updateGame:function(game_id, body, neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
-            "MATCH (game:Game {_id: $id}) SET game.name=$name, game.author=$author, game.date=$date, game.genre=$genre, game.description=$description, game.price=$price RETURN game",
+            "MATCH (game:Game {_id: $id}) SET game.title=$title, game.publisher=$publisher, game.release_date=$release_date, game.genre=$genre, game.short_description=$short_description, game.price=$price RETURN game",
             {   
                 id: game_id,
-                name: body.name,
-                author: body.author,
-                date: body.date,
+                title: body.title,
+                publisher: body.publisher,
+                release_date: body.release_date,
                 genre: body.genre,
-                description: body.description,
+                short_description: body.short_description,
                 price: body.price
             }
         ).then((results)=>{
