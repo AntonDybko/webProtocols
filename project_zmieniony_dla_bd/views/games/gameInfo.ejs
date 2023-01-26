@@ -22,7 +22,7 @@
                     <a href="/main" class="navbar-brand">main page</a>
                     <a href="/logout" class="navbar-brand">logout</a>
                 </nav>
-
+                <div id="error"></div>
                 <div action="/addToLibrary/<%= game._id%>" method="post">
                     <h1><span class="fa"></span><%= game.title%></h1>
                     <div>
@@ -53,10 +53,10 @@
                     <div>
                         <label>Write review</label>
                         <div>Mark:</div>
-                        <input type="text" pattern="[1-5]" class="form-control" id="mark" required="required">
+                        <input type="number" class="form-control" id="mark" required="required">
                         <div>Text:</div>
                         <input type="text" class="form-control" id="text" required="required">
-                        <button>Send review</button>
+                        <button onclick="addReview()">Send review</button>
                     </div>
                     <hr>
                     <ul id="reviews">
@@ -67,6 +67,11 @@
                                 <div><%= review.mark%></div>
                                 <label>Text</label>
                                 <div><%= review.text%></div>
+                                <!-- <%if(user._id===review.authorId || user.role==="ADMIN"){%>
+                                    <button class="btn" onclick="deleteReview('<%= review.authorId%>')">Delete review</button>
+                                <%}%>-->
+                                <button class="btn" onclick="deleteReview('<%= review._id%>', '<%= review.authorId%>')">Delete review</button>
+                                <hr>
                             </li>
                         <%})%>
                     </ul>
@@ -94,7 +99,47 @@
 
         }
         const addReview = () =>{
+            const mark = document.getElementById('mark').value;
+            const text = document.getElementById('text').value
+            let error =  document.getElementById('error')
 
+            if(mark < 1 || mark >10){
+                error.classList.add("alert")
+                error.classList.add("alert-danger")
+                error.innerHTML = "Mark must be higher than 0 and lower than 10"
+            }
+            else {
+                if(text.length > 200 || text.length < 1){
+                    error.classList.add("alert")
+                    error.classList.add("alert-danger")
+                    error.innerHTML = "Text length must be greater than 1 and less then 200"
+                }else{
+                    const newReview = {
+                        authorLogin: '<%= user.login%>',
+                        authorId: '<%= user._id%>',
+                        mark: mark,
+                        text: text
+                    }
+                    axios.post(`addReviewToGame?game_id=<%=game._id%>`, newReview).then(()=>{
+                        open(location, '_self')
+                    })
+                }
+            }
+
+        }
+        const deleteReview = (review_id ,review_author_id) =>{
+            axios.delete(`removeReview?game_id=<%=game._id%>&review_author_id=${review_author_id}&review_id=${review_id}`)
+            .then(res=> {
+                return res.data
+            })
+            .then(()=>{
+                open(location, '_self')
+            }).catch(err=>{
+                let error =  document.getElementById('error')
+                error.classList.add("alert")
+                error.classList.add("alert-danger")
+                error.innerHTML = "you do not have enough rights do delete this review"
+            })
         }
         const removeFromFavourite = (gameId) =>{
             axios.delete(`/removeFromFavourite?game_id=${gameId}`).then(()=>{

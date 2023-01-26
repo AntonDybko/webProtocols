@@ -94,18 +94,73 @@ module.exports = {
             return _.get(results.records[0].get('game'), 'properties')
         })
     },
-    getComments:function(id, neo_driver){
+    getComments:function(game_id, neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
             'MATCH (user:User)-[r:REVIEW]->(game:Game) WHERE game._id=$_id RETURN r',{
-                _id: id
+                _id: game_id
             }
         ).then(reviews=>{
-            const reviews = []
+            const gamereviews = []
             reviews.records.forEach(review => {
-                reviews.push(_.get(review.get('r'), 'properties'))
+                gamereviews.push(_.get(review.get('r'), 'properties'))
             })
-            return reviews
+            return gamereviews
+        })
+    },
+    addReviewToGame:function(game_id, user_id, reviewBody, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+            'MATCH (user:User {_id: $user_id}), (game:Game {_id: $game_id}) CREATE (user)-[r:REVIEW {_id: $review_id, authorId: $authorId, authorLogin: $authorLogin, mark: $mark, text: $text}]->(game)',{
+                game_id: game_id,
+                user_id: user_id,
+                review_id: uuidv4(),
+                authorId: reviewBody.authorId,
+                authorLogin: reviewBody.authorLogin,
+                mark: reviewBody.mark,
+                text: reviewBody.text
+            }
+        ).then(()=>{
+            return 'success'
+        })
+    },
+    removeReview:function(game_id, review_id, review_author_id, user_id, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+            'MATCH (user:User)-[r:REVIEW]->(game:Game) WHERE user._id=$user_id AND game._id=$game_id AND r._id=$review_id RETURN r',{
+                game_id: game_id,
+                user_id: user_id,
+                review_id: review_id
+            }
+        ).then(reviews=>{
+            if(reviews.records.length != 0){
+                return neo_session.run(
+                    'MATCH (user:User)-[r:REVIEW]->(game:Game) WHERE user._id=$user_id AND game._id=$game_id AND r._id=$review_id DELETE r',{
+                        game_id: game_id,
+                        user_id: user_id,
+                        review_id: review_id
+                    }
+                ).then(()=>{
+                    return 'success'
+                })
+            }else{
+                return neo_session.run('MATCH (user:User {_id: $userId}) RETURN user',{ userId: user_id}).then((user)=>{
+                    const currUser = _.get(user.records[0].get('user'), 'properties')
+                    if(currUser.role==='ADMIN'){
+                        return neo_session.run(
+                            'MATCH (user:User)-[r:REVIEW]->(game:Game) WHERE user._id=$review_author_id AND game._id=$game_id AND r._id=$review_id DELETE r',{
+                                game_id: game_id,
+                                review_author_id: review_author_id,
+                                review_id: review_id
+                            }
+                        ).then(()=>{
+                            return 'success'
+                        })
+                    }else{
+                        return 'failure'
+                    }
+                })
+            }
         })
     }
 }

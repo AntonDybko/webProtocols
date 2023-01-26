@@ -29,6 +29,8 @@ zamowienie:
     (zamowienie) -[r:zamowienie] -> (gra)
 review:
     _id
+    authorId
+    authorLogin
     mark
     text
 look konto:

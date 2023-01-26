@@ -1,6 +1,6 @@
 const gameManage = require("../config/gameManage");
 //var Game = require('../app/models/game.js');
-var permissions = require('./permissions.js');
+//var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
 var jwt = require('jsonwebtoken');
 //var randomstring = require("randomstring");
@@ -69,10 +69,10 @@ module.exports = function(app, neo_driver) {
     app.get('/profile', isLoggedIn,  function(req, res) {
         res.render('users/profile.ejs')
     });
-    app.get('/importGamesFromJsonFile', isLoggedIn,  permissions.isAdmin, function(req, res) {
+    app.get('/importGamesFromJsonFile', isLoggedIn,  isAdmin, function(req, res) {
         res.render('games/importGamesFromJsonFile.ejs')
     })
-    app.get('/exportGamesToJsonFile', isLoggedIn, permissions.isAdmin, async function(req, res) {
+    app.get('/exportGamesToJsonFile', isLoggedIn, isAdmin, async function(req, res) {
         const games = await gameManage.getGamesInArray(neo_driver)
         res.status(200).send(games)
     })
@@ -84,13 +84,13 @@ module.exports = function(app, neo_driver) {
     })
 
     //games
-    app.get('/manageGames',isLoggedIn, permissions.isAdmin, function(req, res) {
+    app.get('/manageGames',isLoggedIn, isAdmin, function(req, res) {
         res.render('games/manageGames.ejs'); //?????
     });
-    app.get('/addGame', isLoggedIn, permissions.isAdmin, function(req, res) { 
+    app.get('/addGame', isLoggedIn, isAdmin, function(req, res) { 
         res.render('games/addGame.ejs'); //?????
     });
-    app.get('/listOfGames', isLoggedIn, permissions.isAdmin, function(req, res) {
+    app.get('/listOfGames', isLoggedIn, isAdmin, function(req, res) {
         const neo_session = neo_driver.session()
         neo_session.run("MATCH (game:Game) RETURN game")
         .then(results => {
@@ -104,7 +104,7 @@ module.exports = function(app, neo_driver) {
         })
     });
 
-    app.get('/updateGame/:game_id',isLoggedIn, permissions.isAdmin, function(req, res) { //?...
+    app.get('/updateGame/:game_id',isLoggedIn, isAdmin, function(req, res) { //?...
         const game_id = req.params.game_id.replace('.', '')
         const neo_session = neo_driver.session()
         neo_session.run("MATCH (game:Game {_id: $game_id}) RETURN game", { game_id: game_id})
@@ -114,7 +114,7 @@ module.exports = function(app, neo_driver) {
             }); 
         })
     });
-    app.delete('/removeGame',isLoggedIn, permissions.isAdmin, function(req, res) { //restfull delete
+    app.delete('/removeGame',isLoggedIn, isAdmin, function(req, res) { //restfull delete
         console.log("removegame?")
         const neo_session = neo_driver.session()
         //const second_neo_session = neo_driver.session()
@@ -152,6 +152,26 @@ module.exports = function(app, neo_driver) {
             favouriteGames: gameIds
         })
     });
+    app.post('/gameInfo/addReviewToGame', isLoggedIn, async function(req, res){
+        const game_id = req.query.game_id
+        console.log(req.body)
+        gameManage.addReviewToGame(game_id, req.cookies._id, req.body, neo_driver).then(()=>{
+            res.sendStatus(201)
+        }).catch(err=>{
+            console.log(err)
+        })
+    })
+    app.delete('/gameInfo/removeReview', isLoggedIn, async function(req, res){
+        const game_id = req.query.game_id
+        const review_author_id = req.query.review_author_id
+        const review_id = req.query.review_id
+        gameManage.removeReview(game_id, review_id, review_author_id, req.cookies._id, neo_driver).then((result)=>{
+            if(result === 'failure') res.sendStatus(400)
+            else res.sendStatus(204)
+        }).catch(err=>{
+            console.log(err)
+        })
+    })
 
     
     //favourite
@@ -231,6 +251,18 @@ module.exports = function(app, neo_driver) {
             res.redirect('/logout')
         }
 
+    }
+    function isAdmin(req, res, next){
+        const neo_session = neo_driver.session()
+        neo_session.run('MATCH (user:User {_id: $userId}) RETURN user',{ userId: req.cookies._id}).then((user)=>{
+            const currUser = _.get(user.records[0].get('user'), 'properties')
+            if(currUser.role!='ADMIN'){
+                res.status(401)
+                return res.send('Access is allowed only to administrators')
+            }else{
+                next()
+            }
+        })
     }
 
     app.post('/signup', function(req, res){
@@ -338,18 +370,18 @@ module.exports = function(app, neo_driver) {
     });
 
     
-    app.post('/addGame',isLoggedIn, permissions.isAdmin, function(req, res){ 
+    app.post('/addGame',isLoggedIn, isAdmin, function(req, res){ 
         gameManage.addGame(req.body, neo_driver).then(()=>{
             res.redirect('/manageGames');
         })
     });
-    app.put('/updateGame',isLoggedIn, permissions.isAdmin, function(req, res) { //restfull put
+    app.put('/updateGame',isLoggedIn, isAdmin, function(req, res) { //restfull put
         const game_id = req.query.game_id.replace('.', '')
         gameManage.updateGame(game_id, req.body, neo_driver).then(()=>{
             res.status(200).json(req.body);
         })
     });
-    app.post('/importGamesFromJsonFile',isLoggedIn, permissions.isAdmin, function(req, res){
+    app.post('/importGamesFromJsonFile',isLoggedIn, isAdmin, function(req, res){
         //console.log(req.body)
         req.body.forEach(game=>{
             let gameToAdd = {
