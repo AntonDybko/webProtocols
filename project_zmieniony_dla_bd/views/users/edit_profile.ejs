@@ -28,14 +28,13 @@
                 <%}%>
                 <div>
                     <div class="form-group">
+                        <label>Email</label>
+                        <div><%= user.email %></div>
+                    </div>
+                    <div class="form-group">
                         <label>Login</label>
                         <div><%= user.login %></div>
                         <input type="text" class="form-control" name="login" required="required" value="<%= user.login%>" id="login">
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <div><%= user.email %></div>
-                        <input type="email" class="form-control" name="email" required="required" value="<%= user.email%>" id="email">
                     </div>
                     <div class="form-group">
                         <label>Address</label>
@@ -70,14 +69,12 @@
     <script>
         const updateUser = (gameId) =>{
             const login = document.getElementById('login').value
-            const email = document.getElementById('email').value
             const address = document.getElementById('address').value
             const phone = document.getElementById('phone').value
             const password = document.getElementById('password').value
             const password_2 = document.getElementById('password_2').value
             const body = {
                 login: login,
-                email: email,
                 address: address, 
                 phone: phone,
                 password: password,

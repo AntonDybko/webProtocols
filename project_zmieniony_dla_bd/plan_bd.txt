@@ -27,6 +27,10 @@ zamowienie:
     id
     status
     (zamowienie) -[r:zamowienie] -> (gra)
+review:
+    _id
+    mark
+    text
 look konto:
     login(email)
     password

@@ -50,6 +50,27 @@
                         <div><%= game.price%></div>
                     </div>
                     <hr/>
+                    <div>
+                        <label>Write review</label>
+                        <div>Mark:</div>
+                        <input type="text" pattern="[1-5]" class="form-control" id="mark" required="required">
+                        <div>Text:</div>
+                        <input type="text" class="form-control" id="text" required="required">
+                        <button>Send review</button>
+                    </div>
+                    <hr>
+                    <ul id="reviews">
+                        <%reviews.forEach(review=>{%>
+                            <li>
+                                <label><%= review.authorLogin%></label>
+                                <label>Mark</label>
+                                <div><%= review.mark%></div>
+                                <label>Text</label>
+                                <div><%= review.text%></div>
+                            </li>
+                        <%})%>
+                    </ul>
+                    <hr>
                     <div id="buttons">
                         <button class="btn btn-warning btn-lg" onclick="zamowienie('<%= game._id%>')">
                             złożyc zamówienie
@@ -70,6 +91,9 @@
     </body>
     <script>
         const zamowienie = () =>{
+
+        }
+        const addReview = () =>{
 
         }
         const removeFromFavourite = (gameId) =>{

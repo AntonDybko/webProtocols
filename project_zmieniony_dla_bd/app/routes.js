@@ -139,6 +139,7 @@ module.exports = function(app, neo_driver) {
     app.get('/gameInfo/:game_id',isLoggedIn, async function(req, res) {
         const game_id = req.params.game_id.replace('.', '');
         const game = await gameManage.findGameById(game_id, neo_driver);
+        const reviews = await gameManage.getComments(game_id, neo_driver)
 
         const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
         const gameIds = []
@@ -147,6 +148,7 @@ module.exports = function(app, neo_driver) {
         console.log(favouriteGames);
         res.render('games/gameInfo.ejs', {
             game: game,
+            reviews: reviews,
             favouriteGames: gameIds
         })
     });
@@ -271,11 +273,10 @@ module.exports = function(app, neo_driver) {
             ).then(result => {
                 if(bcrypt.compareSync(req.body.password, _.get(result.records[0].get('user'), 'properties').password)){
                     neo_session.run(
-                        "MATCH (user:User {_id: $_id}) SET user.login=$newLogin, user.email=$newEmail, user.address=$newAddress, user.phone=$newPhone RETURN user",
+                        "MATCH (user:User {_id: $_id}) SET user.login=$newLogin, user.address=$newAddress, user.phone=$newPhone RETURN user",
                         {
                             _id: req.cookies._id,
                             newLogin: req.body.login,
-                            newEmail: req.body.email,
                             newAddress: req.body.address,
                             newPhone: req.body.phone
                         }

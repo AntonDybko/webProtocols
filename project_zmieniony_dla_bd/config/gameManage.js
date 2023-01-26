@@ -93,5 +93,19 @@ module.exports = {
         ).then(results => {
             return _.get(results.records[0].get('game'), 'properties')
         })
+    },
+    getComments:function(id, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+            'MATCH (user:User)-[r:REVIEW]->(game:Game) WHERE game._id=$_id RETURN r',{
+                _id: id
+            }
+        ).then(reviews=>{
+            const reviews = []
+            reviews.records.forEach(review => {
+                reviews.push(_.get(review.get('r'), 'properties'))
+            })
+            return reviews
+        })
     }
 }
