@@ -64,19 +64,19 @@
     </body>
     <script>
         const updateGame = (gameId) =>{
-            const name = document.getElementById('name').value
-            const date = document.getElementById('date').value
-            const price = document.getElementById('price').value
-            const author = document.getElementById('author').value
-            const description = document.getElementById('description').value
+            const title = document.getElementById('title').value
+            const publisher = document.getElementById('publisher').value
+            const release_date = document.getElementById('release_date').value
             const genre = document.getElementById('genre').value
+            const short_description = document.getElementById('short_description').value
+            const price = document.getElementById('price').value
             const body = {
-                name: name,
-                author: author,
-                date: date, 
-                description: description,
-                price: price,
+                title: title,
+                publisher: publisher,
+                release_date: release_date, 
                 genre: genre,
+                short_description: short_description,
+                price: price,
             }
             axios.put(`/updateGame?game_id=${gameId}`, body).then(()=>{
                 window.location.replace('/listOfGames')

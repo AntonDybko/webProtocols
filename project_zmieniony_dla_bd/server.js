@@ -1,8 +1,7 @@
 var express = require('express');
 var app = express();
-var User = require('./app/models/user')
+//var User = require('./app/models/user')
 var cors = require('cors')
-//var User = require('./app/models/user.js');
 var neo4j = require('neo4j-driver');
 //const { auth } = require('express-openid-connect');
 //const httpServer = require("http").createServer(app); //testing
@@ -32,7 +31,7 @@ app.use(session({ secret: 'ilovescotchscotchyscotchscotch' }));
 //app.use(passport.initialize());
 //app.use(passport.session()); 
 app.use(flash());
-require('./app/routes.js')(app, User, driver/*, passport*/);
+require('./app/routes.js')(app, driver/*, passport*/);
 
 
 

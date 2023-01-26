@@ -24,50 +24,63 @@
                 </nav>
 
                 <div action="/addToLibrary/<%= game._id%>" method="post">
-                    <h1><span class="fa"></span><%= game.name%></h1>
+                    <h1><span class="fa"></span><%= game.title%></h1>
                     <div>
-                        <h3>Author:</h3>
-                        <div><%= game.author%></div>
+                        <h3>Publisher:</h3>
+                        <div><%= game.publisher%></div>
                     </div>
                     <hr>
                     <div>
-                        <h3>Date of publication:</h3>
-                        <div><%= game.date%></div>
+                        <h3>Genre:</h3>
+                        <div><%= game.genre%></div>
                     </div>
                     <hr>
                     <div>
-                        <h3>Description:</h3>
-                        <div><%= game.description%></div>
+                        <h3>Release date:</h3>
+                        <div><%= game.release_date%></div>
+                    </div>
+                    <hr>
+                    <div>
+                        <h3>Short description:</h3>
+                        <div><%= game.short_description%></div>
                     </div>
                     <hr/>
-                    <% if(!u_library.includes(game._id)) {%>
-                        <div>
-                            <button class="btn btn-warning btn-lg" onclick="addToLibrary('<%= game._id%>')">
-                                Add to library
+                    <div>
+                        <h3>Price:</h3>
+                        <div><%= game.price%></div>
+                    </div>
+                    <hr/>
+                    <div id="buttons">
+                        <button class="btn btn-warning btn-lg" onclick="zamowienie('<%= game._id%>')">
+                            złożyc zamówienie
+                        </button>
+                        <%if(!favouriteGames.includes(game._id)){%>
+                            <button class="btn btn-warning btn-lg" onclick="addToFavourite('<%= game._id%>')">
+                                Add to favourite
                             </button>
-                        </div>
-                    <%}else{%>
-                        <div>
-                            <button class="btn btn-warning btn-lg" onclick="removeFromLibrary('<%= game._id%>')">
-                                remove from library
+                        <%}else{%>
+                            <button class="btn btn-warning btn-lg" onclick="removeFromFavourite('<%= game._id%>')">
+                                Remove from favourite
                             </button>
-                        </div>
-                    <%}%>
-
+                        <%}%>
+                    </div>
                 </div>
             </div>
         </div>
     </body>
     <script>
-        const removeFromLibrary = (gameId) =>{
-            axios.delete(`/removeFromLibrary/${gameId}`).then(
-                open(location, '_self')//.close()
-            )
+        const zamowienie = () =>{
+
         }
-        const addToLibrary = (gameId) =>{
-            axios.put(`/addToLibrary/${gameId}`).then(
-                open(location, '_self')//.close()
-            )
+        const removeFromFavourite = (gameId) =>{
+            axios.delete(`/removeFromFavourite?game_id=${gameId}`).then(()=>{
+                open(location, '_self')
+            })
+        }
+        const addToFavourite = (gameId) =>{
+            axios.put(`/addToFavourite?game_id=${gameId}`).then(()=>{
+                open(location, '_self')
+            })
         }
     </script>
 </html>

@@ -1,4 +1,3 @@
-var User = require('./models/user.js');
 
 module.exports = {
     isAdmin:function(req, res, next){

@@ -13,6 +13,15 @@
                 flex-wrap: wrap;
                 align-items: center;
             }
+            input {
+                margin-bottom: 5px
+            }
+            .yellow {
+                background-color: rgb(249, 249, 97);
+            }
+            .red {
+                background-color: rgb(243, 123, 121);
+            }
         </style>
     </head>
     <body>
@@ -22,41 +31,186 @@
                     <a href="/main" class="navbar-brand">main page</a>
                     <a href="/logout" class="navbar-brand">logout</a>
                 </nav>
+                <div>
+                    <label>Lowest price</label>
+                    <input type="number" step="0.01" class="form-control" id="filtered_lower_price">
+                    <label>Highest price</label>
+                    <input type="number" step="0.01" class="form-control" id="filtered_higher_price">
+                    <div>
+                        <button class="btn btn-warning btn-lg" onclick="filterByPrice(document.getElementById('filtered_lower_price').value, document.getElementById('filtered_higher_price').value)">Filter by price</button>
+                    </div>
+                </div>
+                <hr>
+                <div>
+                    <label>Min release date</label>
+                    <input type="date" class="form-control" id="filtered_lower_date">
+                    <label>Max release date</label>
+                    <input type="date" class="form-control" id="filtered_higher_date">
+                    <div>
+                        <button class="btn btn-warning btn-lg" onclick="filterByReleaseDate(document.getElementById('filtered_lower_date').value, document.getElementById('filtered_higher_date').value)">Filter by release date</button>
+                    </div>
+                </div>
+                <hr>
+                <div>
+                    <button class="btn" onclick="sortDescendingByDate()" id="sortByDate">Sort descending by release date</button>
+                    <button class="btn" onclick="sortDescendingByPrice()" id="sortByPrice">Sort descending by price</button>
+                </div>
                 <h1><span class="fa"></span>Games</h1>
-                <ul>
-                    <%games.forEach( game => {%>
-                        <li>
-                            <a href="/gameInfo/<%= game._id%>" class="btn btn-default">
-                                <%= game.name%>
-                            </a>
-                            <% if(user.role === 'ADMIN') { %>
-                                <a href="/updateGame/<%= game._id%>" class="btn btn-default">
-                                    <span class="fa"></span>
-                                    update game
-                                </a>
-                                <button class="btn btn-default" onclick="removeGame('<%= game._id%>')">
-                                    <span class="fa"></span>
-                                    delete game
-                                </button>
-                            <% } %>
-                        </li>
-                    <%})%>
+                <ul id="games">
+                    
                 </ul>
 
             </div>
         </div>
     </body>
     <script>
+        let games = []
+        '<%gamesList.forEach(game=>{%>'
+            games.push({
+                _id: '<%= game._id%>',
+                title: '<%= game.title%>',
+                publisher: '<%= game.publisher%>',
+                genre: '<%= game.genre%>',
+                release_date: '<%= game.release_date%>',
+                price: '<%= game.price%>',
+            })
+        '<%})%>'
+        const removeGame = (id) =>{
+            //jeszcze nie napisałęm :)
+        }
+        const loadGames = () =>{
+            let gamesUl = document.getElementById('games')
+            let child = gamesUl.lastElementChild; 
+            while (child) {
+                gamesUl.removeChild(child);
+                child = gamesUl.lastElementChild;
+            }
+            games.forEach(game => {
+                let newLi = document.createElement('li');
+                newLi.id = game._id;
+    
+                let newLink = document.createElement('a');
+                newLink.innerHTML = game.title;
+                newLink.classList.add("btn");
+                newLink.classList.add("btn-default");
+                newLink.href=`/gameInfo/${game._id}`;
+                newLi.appendChild(newLink);
+
+                if('<%= user.role%>' === 'ADMIN'){
+                    let updateLink = document.createElement('a');
+                    let deleteButton = document.createElement('button');
+
+                    updateLink.classList.add("btn");
+                    updateLink.classList.add("btn-default");
+                    updateLink.classList.add("yellow");
+                    updateLink.href=`/updateGame/${game._id}`;
+                    updateLink.innerHTML = 'update game'
+
+                    deleteButton.classList.add("btn");
+                    deleteButton.classList.add("btn-default");
+                    deleteButton.classList.add("red");
+                    deleteButton.onclick=removeGame(game._id);
+                    deleteButton.innerHTML = 'delete game'
+
+                    newLi.appendChild(updateLink);
+                    newLi.appendChild(deleteButton);
+                }
+                gamesUl.appendChild(newLi);
+            })
+        }
+        window.addEventListener('load', function(event){
+            loadGames()
+        })
+        const filterByPrice = (lower, higher) =>{
+            games = games.filter(game => (
+                game.price > lower && game.price < higher
+            ))
+            loadGames()
+        }   
+        const filterByReleaseDate = (lower, higher) =>{
+            games = games.filter(game => (
+                game.release_date > lower && game.release_date < higher
+            ))
+            loadGames()
+        }
+        const sortDescendingByDate = () =>{
+            games.sort((a, b) =>{
+                if(a.release_date < b.release_date){
+                    return -1
+                }
+                if(a.release_date > b.release_date){
+                    return 1
+                }
+                return 0
+            })
+            loadGames()
+            let button = document.getElementById('sortByDate')
+            button.innerHTML = 'Sort ascending by date'
+            button.onclick=()=>{
+                sortAscendingByDate()
+            }
+        }
+        const sortAscendingByDate = () =>{
+            games.sort((a, b) =>{
+                if(a.release_date < b.release_date){
+                    return 1
+                }
+                if(a.release_date > b.release_date){
+                    return -1
+                }
+                return 0
+            })
+            loadGames()
+            let button = document.getElementById('sortByDate')
+            button.innerHTML = 'Sort descending by date'
+            button.onclick=()=>{
+                sortDescendingByDate()
+            }
+        }
+        const sortDescendingByPrice = () =>{
+            games.sort((a, b) =>{
+                if(a.price < b.price){
+                    return -1
+                }
+                if(a.price > b.price){
+                    return 1
+                }
+                return 0
+            })
+            loadGames()
+            let button = document.getElementById('sortByPrice')
+            button.innerHTML = 'Sort ascending by price'
+            button.onclick=()=>{
+                sortAscendingByPrice()
+            }
+        }
+        const sortAscendingByPrice = () =>{
+            games.sort((a, b) =>{
+                if(a.price < b.price){
+                    return 1
+                }
+                if(a.price > b.price){
+                    return -1
+                }
+                return 0
+            })
+            loadGames()
+            let button = document.getElementById('sortByPrice')
+            button.innerHTML = 'Sort descending by price'
+            button.onclick=()=>{
+                sortDescendingByPrice()
+            }
+        }
         /*const updateGame = (gameId) =>{
             axios.put(`/updateGame/${gameId}`, )
         }*/
         /*const removeGame = (gameId) =>{
             axios.delete(`/removeGame/${game_id}`)
         }   */
-        const removeGame = (gameId) =>{
+        /*const removeGame = (gameId) =>{
             axios.delete(`/removeGame/${gameId}`).then(
                 open(location, '_self').close()
             )
-        }
+        }*/
     </script>
 </html>

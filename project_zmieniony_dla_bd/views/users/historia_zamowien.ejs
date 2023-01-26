@@ -21,19 +21,18 @@
                     <a href="/main" class="navbar-brand">main page</a>
                     <a href="/logout" class="navbar-brand">logout</a>
                 </nav>
-                <h1><span class="fa"></span>Your profile</h1>
+                <h1><span class="fa"></span>Your zamowienia</h1>
                 <ul>
-                    (_id, status, miejsce_odbioru, gra)
-                    <% zamowienia.forEach(zamowienie =>{ %>
+                    <% zamowienia.forEach((zamowienie) => { %>
                         <li id='<%= zamowienie._id%>'>
                             <label>Status</label>
-                            <div><% =zamowienie.status%></div>
+                            <div><%= zamowienie.status%></div>
 
                             <label>Miejsce odbioru</label>
-                            <div><% =zamowienie.miejsce_odbioru%></div>
+                            <div><%= zamowienie.miejsce_odbioru%></div>
 
                             <label>Game</label>
-                            <div><% =zamowienie.game%></div>
+                            <div><%= zamowienie.game%></div>
                         </li>
                     <% }) %>
                 </ul>

@@ -6,7 +6,10 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
     <style>
-        body        { padding-top:80px; }
+        body { padding-top:80px; }
+        input {
+            margin-bottom: 5px
+        }
     </style>
 </head>
 <body>
@@ -18,7 +21,7 @@
         </div>
         <a href="/library" class="btn btn-default"><span class="fa fa-user"></span>LIBRARY</a>
         <a href="/profile" class="btn btn-default"><span class="fa fa-user"></span>PROFILE</a>
-        <% console.log(user)%>
+        <% console.log('user', user)%>
         <% if(user.role === 'ADMIN') { %>
             <div><a href="/manageGames" class="manageUsers" role="button">manageGames</a></div>
         <% } %>
@@ -28,33 +31,136 @@
         <div class="col-sm-6 col-sm-offset-3">
             <h1><span class="fa"></span>Games</h1>
             <div>
+                <input type="text" class="form-control" id="searched">
                 <div>
-                    <input type="text" class="form-control" name="name" id="searched">
-                    <button class="btn btn-warning btn-lg" onclick="searchGames(document.getElementById('searched').value)">Search</button>
+                    <button class="btn btn-warning btn-lg" onclick="searchGames(document.getElementById('searched').value)">Search by title</button>
+                    <button class="btn btn-warning btn-lg" onclick="filterByPublisher(document.getElementById('searched').value)">Search by publisher</button>
+                    <button class="btn btn-warning btn-lg" onclick="filterByGenre(document.getElementById('searched').value)">Search by genre</button>
                 </div>
             </div>
             <hr>
-            <ul>
-                <%gamesList.forEach( game => {%>
-                    <li id="<%= game._id%>">
-                        <a href="/gameInfo/<%= game._id%>" class="btn btn-default">
-                            <%= game.title%>
-                        </a>
-                    </li>
-                <%})%>
-            </ul>
-
+            <div>
+                <button class="btn" onclick="sortDescendingByDate()" id="sortByDate">Sort descending by release date</button>
+                <button class="btn" onclick="sortDescendingByPrice()" id="sortByPrice">Sort descending by price</button>
+            </div>
+            <hr>
+            <ul id="games"></ul>
         </div>
     </div>
 </div>
 </body>
 <script>
-    searchGames = (searched) => {
-        console.log(searched)
-        window.location.href=`/searchByName?wzorec=${searched}`
-        /*axios.get(`/searchByName?wzorec=${searched}`).then((res)=>{
-            res.render()
-        })*/
+    let games = []
+    '<%gamesList.forEach(game=>{%>'
+        games.push({
+            _id: '<%= game._id%>',
+            title: '<%= game.title%>',
+            publisher: '<%= game.publisher%>',
+            genre: '<%= game.genre%>',
+            release_date: '<%= game.release_date%>',
+            price: '<%= game.price%>',
+        })
+    '<%})%>'
+    const searchGames = (searched) =>{
+        window.location.href=`/searchByTitle?title=${searched}`
+    }
+    const filterByPublisher = (searched) =>{
+        window.location.href=`/searchByPublisher?publisher=${searched}`
+    }
+    const filterByGenre = (searched) =>{
+        window.location.href=`/searchByGenre?genre=${searched}`
+    }
+    const loadGames = () =>{
+        let gamesUl = document.getElementById('games')
+        let child = gamesUl.lastElementChild; 
+        while (child) {
+            gamesUl.removeChild(child);
+            child = gamesUl.lastElementChild;
+        }
+        games.forEach(game => {
+            let newLi = document.createElement('li');
+            newLi.id = game._id
+
+            let newLink = document.createElement('a');
+            newLink.innerHTML = game.title;
+            newLink.classList.add("btn")
+            newLink.classList.add("btn-default")
+            newLink.href=`/gameInfo/${game._id}`
+
+            newLi.appendChild(newLink)
+            gamesUl.appendChild(newLi)
+        })
+    }
+    window.addEventListener('load', function(event){
+        loadGames()
+    })
+    const sortDescendingByDate = () =>{
+        games.sort((a, b) =>{
+            if(a.release_date < b.release_date){
+                return -1
+            }
+            if(a.release_date > b.release_date){
+                return 1
+            }
+            return 0
+        })
+        loadGames()
+        let button = document.getElementById('sortByDate')
+        button.innerHTML = 'Sort ascending by date'
+        button.onclick=()=>{
+            sortAscendingByDate()
+        }
+    }
+    const sortAscendingByDate = () =>{
+        games.sort((a, b) =>{
+            if(a.release_date < b.release_date){
+                return 1
+            }
+            if(a.release_date > b.release_date){
+                return -1
+            }
+            return 0
+        })
+        loadGames()
+        let button = document.getElementById('sortByDate')
+        button.innerHTML = 'Sort descending by date'
+        button.onclick=()=>{
+            sortDescendingByDate()
+        }
+    }
+    const sortDescendingByPrice = () =>{
+        games.sort((a, b) =>{
+            if(a.price < b.price){
+                return -1
+            }
+            if(a.price > b.price){
+                return 1
+            }
+            return 0
+        })
+        loadGames()
+        let button = document.getElementById('sortByPrice')
+        button.innerHTML = 'Sort ascending by price'
+        button.onclick=()=>{
+            sortAscendingByPrice()
+        }
+    }
+    const sortAscendingByPrice = () =>{
+        games.sort((a, b) =>{
+            if(a.price < b.price){
+                return 1
+            }
+            if(a.price > b.price){
+                return -1
+            }
+            return 0
+        })
+        loadGames()
+        let button = document.getElementById('sortByPrice')
+        button.innerHTML = 'Sort descending by price'
+        button.onclick=()=>{
+            sortDescendingByPrice()
+        }
     }
 </script>
 </html>

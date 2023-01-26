@@ -1,6 +1,5 @@
 const gameManage = require("../config/gameManage");
-var Game = require('../app/models/game.js');
-var User = require('../app/models/user.js');
+//var Game = require('../app/models/game.js');
 var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
 var jwt = require('jsonwebtoken');
@@ -15,7 +14,7 @@ const zamowienieManage = require('../config/zamowienieManage')
 
 //cannot use req.params in git requests, nee dto use req.query!!!!!!!!
 
-module.exports = function(app, passport, neo_driver) {
+module.exports = function(app, neo_driver) {
     app.get('/', function(req, res) {
         //console.log(req.user)
         if(req.cookies.accessToken === undefined){
@@ -70,9 +69,6 @@ module.exports = function(app, passport, neo_driver) {
     app.get('/profile', isLoggedIn,  function(req, res) {
         res.render('users/profile.ejs')
     });
-    app.get('/historia_zamowien', isLoggedIn,  function(req, res) {
-        res.render('users/historia_zamowien.ejs')
-    });
     app.get('/importGamesFromJsonFile', isLoggedIn,  permissions.isAdmin, function(req, res) {
         res.render('games/importGamesFromJsonFile.ejs')
     })
@@ -80,9 +76,9 @@ module.exports = function(app, passport, neo_driver) {
         const games = await gameManage.getGamesInArray(neo_driver)
         res.status(200).send(games)
     })
-    app.get('/historia_zamowien', isLoggedIn, permissions.isAdmin, async function(req, res) {
+    app.get('/historia_zamowien', isLoggedIn, async function(req, res) {
         const zamowienia = await zamowienieManage.getallZamowieniaOfUser(req.cookies._id, neo_driver);
-        res.render('user/historia_zamowien.ejs', {
+        res.render('users/historia_zamowien.ejs', {
             zamowienia: zamowienia
         })
     })
@@ -140,54 +136,64 @@ module.exports = function(app, passport, neo_driver) {
             console.log(error);
         })
     });
-    app.get('/gameInfo/:game_id',isLoggedIn, function(req, res) {
-        const game_id = req.params.game_id.replace('.', '')
-        Game.findOne({_id: game_id}, function(err, game){
-            User.findOne({_id: req.user._id}, function(err, user){
-                res.render('games/gameInfo.ejs',{
-                    game: game,
-                    u_library: user.library
-                }); 
-            })
+    app.get('/gameInfo/:game_id',isLoggedIn, async function(req, res) {
+        const game_id = req.params.game_id.replace('.', '');
+        const game = await gameManage.findGameById(game_id, neo_driver);
+
+        const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
+        const gameIds = []
+        favouriteGames.forEach(game => gameIds.push(game._id))
+
+        console.log(favouriteGames);
+        res.render('games/gameInfo.ejs', {
+            game: game,
+            favouriteGames: gameIds
         })
     });
 
-    /*app.get('/logout', function(req, res) {
-        req.logout();
-        res.redirect('/');
-    });*/
-    app.get('/library',isLoggedIn, function(req, res){
-        const yourGames = []
-        if(req.user.library.length===0){
-            res.render('library.ejs',{
-                yourGames: [],
+    
+    //favourite
+    app.get('/favourite',isLoggedIn, async function(req, res){
+        const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
+        console.log(favouriteGames)
+        res.render('users/favourite.ejs',{
+            yourGames: favouriteGames,
+        })
+        
+
+    });
+    app.delete('/removeFromFavourite', isLoggedIn, async function(req, res) { //restfull delete
+        const game_id = req.query.game_id
+        const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
+        const gameIds = []
+        favouriteGames.forEach(game => gameIds.push(game._id))
+        if(gameIds.includes(game_id)){
+            userManage.removeFromFavourite(game_id, req.cookies._id, neo_driver).then((result)=>{
+                res.sendStatus(204)
+            }).catch(err => {
+                console.log(err)
+                res.sendStatus(400)
             })
         }else{
-            req.user.library.forEach( game_id => {
-                Game.findOne({ _id: game_id }, function(err, game){
-                    if(err){
-                        console.log("error"+err)
-                    }else{
-                        yourGames.push(game)
-                        if(yourGames.length===req.user.library.length){
-                            res.render('library.ejs',{
-                                yourGames: yourGames,
-                            })
-                        }
-                    }
-
-                })
-            })
+            res.sendStatus(400)
         }
 
     });
-    app.delete('/removeFromLibrary/:game_id', isLoggedIn, function(req, res) { //restfull delete
-        const game_id = req.params.game_id.replace('.', '')
-        console.log(game_id)
-        userManage.removeFromLibrary(game_id, req.user._id)
-        //res.redirect('/library');
-        res.status(204).send("successfully remove from library")
-
+    app.put('/addToFavourite',isLoggedIn, async function(req, res){ //restfull put
+        const game_id = req.query.game_id
+        const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
+        const gameIds = []
+        favouriteGames.forEach(game => gameIds.push(game._id))
+        if(!gameIds.includes(game_id)){
+            userManage.addToFavourite(game_id, req.cookies._id, neo_driver).then((result)=>{
+                res.sendStatus(204)
+            }).catch(err => {
+                console.log(err)
+                res.sendStatus(400)
+            })
+        }else{
+            res.sendStatus(400)
+        }
     });
 
 
@@ -214,7 +220,6 @@ module.exports = function(app, passport, neo_driver) {
                             address: user.address,
                             phone: user.phone,
                             role: user.role,
-                            favourite: user.favourite
                         } 
                         return next();
                     } 
@@ -227,7 +232,7 @@ module.exports = function(app, passport, neo_driver) {
     }
 
     app.post('/signup', function(req, res){
-        passport.register(neo_session, req.body.email, req.body.password).then(user =>{
+        userManage.register(neo_session, req.body.email, req.body.password).then(user =>{
             const key = user.api_key
             const accessToken = jwt.sign(user, key, { expiresIn: '1d'})
 
@@ -242,8 +247,7 @@ module.exports = function(app, passport, neo_driver) {
         })
     });
     app.post('/login', function(req, res){
-
-        passport.login(neo_driver, req.body.email, req.body.password).then(user =>{
+        userManage.login(neo_driver, req.body.email, req.body.password).then(user =>{
             console.log("login form user:", user)
             const key = user.api_key
             const accessToken = jwt.sign(user, key, { expiresIn: '1d'})
@@ -361,26 +365,26 @@ module.exports = function(app, passport, neo_driver) {
         res.sendStatus(201)
     })
 
-    app.get('/searchByName',isLoggedIn, function(req, res){
-        Game.find({"name": { $regex: `${req.query.wzorec}`}}, function(err, games){
-            res.render('games/searchedGames.ejs',{
-                games: games,
-                user: {
-                    _id: req.user._id,
-                    email: req.user.email,
-                    library: req.user.library,
-                    role: req.user.role 
-                }
-            })
+    app.get('/searchByTitle',isLoggedIn, async function(req, res){
+        const filteredGames = await gameManage.filterGamesByTitle(req.query.title, neo_driver);
+        res.render('games/searchedGames.ejs',{
+            gamesList: filteredGames,
+        })
+    });
+    app.get('/searchByPublisher',isLoggedIn, async function(req, res){
+        const filteredGames = await gameManage.filterGamesByPublisher(req.query.publisher, neo_driver);
+        res.render('games/searchedGames.ejs',{
+            gamesList: filteredGames,
+        })
+    });
+    app.get('/searchByGenre',isLoggedIn, async function(req, res){
+        const filteredGames = await gameManage.filterGamesByGenre(req.query.genre, neo_driver);
+        res.render('games/searchedGames.ejs',{
+            gamesList: filteredGames,
         })
     });
     //user posts
-    app.put('/addToLibrary/:game_id',isLoggedIn, function(req, res){ //restfull put
-        const game_id = req.params.game_id.replace('.', '')
-        userManage.addToLibrary(game_id, req.user)
-        //res.redirect('/library')
-        res.status(200).send('successfully added to library')
-    });
+    
     
 
 }

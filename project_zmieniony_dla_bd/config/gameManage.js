@@ -49,5 +49,49 @@ module.exports = {
             })
             return games
         })
+    },
+    filterGamesByTitle:function(title, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+        'MATCH (game:Game) WHERE game.title =~ $wzorec RETURN game', { wzorec: `.*${title}.*`}
+        ).then(results => {
+            const games = []
+            results.records.forEach(record => {
+                games.push(_.get(record.get('game'), 'properties'))
+            })
+            return games
+        })
+    },
+    filterGamesByPublisher:function(publisher, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+        'MATCH (game:Game) WHERE game.publisher =~ $publisher RETURN game', { publisher: publisher}
+        ).then(results => {
+            const games = []
+            results.records.forEach(record => {
+                games.push(_.get(record.get('game'), 'properties'))
+            })
+            return games
+        })
+    },
+    filterGamesByGenre:function(genre, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+        'MATCH (game:Game) WHERE game.genre =~ $genre RETURN game', { genre: genre}
+        ).then(results => {
+            const games = []
+            results.records.forEach(record => {
+                games.push(_.get(record.get('game'), 'properties'))
+            })
+            return games
+        })
+    },
+    findGameById:function(id, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+        'MATCH (game:Game) WHERE game._id = $_id RETURN game', { _id: id}
+        ).then(results => {
+            return _.get(results.records[0].get('game'), 'properties')
+        })
     }
 }

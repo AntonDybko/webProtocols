@@ -3,7 +3,7 @@ const { _  }= require('underscore');
 module.exports = {
     getallZamowieniaOfUser: function(_id, neo_driver){
         const neo_session = neo_driver.session()
-        neo_session.run(
+        return neo_session.run(
             "MATCH (user:User {_id: $_id})-[r:zamowienie]->(game:Game) RETURN r",
             {
                 _id: _id
