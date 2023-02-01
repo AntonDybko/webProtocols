@@ -25,7 +25,7 @@ module.exports = {
         ).then(results => {
             const zamowienia = []
             results.records.forEach(record => {
-                zamowienia.push(_.get(record.get('zamowienie'), 'properties'))
+                zamowienia.push(_.get(record.get('z'), 'properties'))
             })
             return zamowienia
         }).catch(err => console.log(err))

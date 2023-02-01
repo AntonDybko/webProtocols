@@ -79,8 +79,14 @@ module.exports = function(app, neo_driver) {
 
     app.get('/historia_zamowien', isLoggedIn, async function(req, res) {
         const zamowienia = await zamowienieManage.getallZamowieniaOfUser(req.cookies._id, neo_driver);
-        res.render('users/historia_zamowien.ejs', {
+        res.render('users/historiaZamowien.ejs', {
             zamowienia: zamowienia
+        })
+    })
+    app.get('/lista_zamowien', isLoggedIn, isAdmin, async function(req, res) {
+        const all_zamowienia = await zamowienieManage.getallZamowienia(neo_driver);
+        res.render('users/listaZamowien.ejs', {
+            all_zamowienia: all_zamowienia
         })
     })
     app.get('/zamowienie/:game_id', isLoggedIn, function(req, res) {
