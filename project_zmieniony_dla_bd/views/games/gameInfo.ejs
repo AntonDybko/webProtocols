@@ -23,7 +23,7 @@
                     <a href="/logout" class="navbar-brand">logout</a>
                 </nav>
                 <div id="error"></div>
-                <div action="/addToLibrary/<%= game._id%>" method="post">
+                <div>
                     <h1><span class="fa"></span><%= game.title%></h1>
                     <div>
                         <h3>Publisher:</h3>
@@ -77,9 +77,9 @@
                     </ul>
                     <hr>
                     <div id="buttons">
-                        <button class="btn btn-warning btn-lg" onclick="zamowienie('<%= game._id%>')">
+                        <a class="btn btn-warning btn-lg" href='/zamowienie/<%= game._id%>'>
                             złożyc zamówienie
-                        </button>
+                        </a>
                         <%if(!favouriteGames.includes(game._id)){%>
                             <button class="btn btn-warning btn-lg" onclick="addToFavourite('<%= game._id%>')">
                                 Add to favourite
@@ -95,9 +95,9 @@
         </div>
     </body>
     <script>
-        const zamowienie = () =>{
-
-        }
+        /*const zamowienie = (game_id) =>{
+            axios.post(`/makeZamowienie?game_id=${game_id}`)
+        }*/
         const addReview = () =>{
             const mark = document.getElementById('mark').value;
             const text = document.getElementById('text').value
@@ -128,7 +128,7 @@
 
         }
         const deleteReview = (review_id ,review_author_id) =>{
-            axios.delete(`removeReview?game_id=<%=game._id%>&review_author_id=${review_author_id}&review_id=${review_id}`)
+            axios.delete(`/removeReview?game_id=<%=game._id%>&review_author_id=${review_author_id}&review_id=${review_id}`)
             .then(res=> {
                 return res.data
             })

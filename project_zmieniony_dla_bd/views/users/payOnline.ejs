@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Node Authentication</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script> <!-- load axios test-->
+        <style>
+            body        { padding-top:80px; }
+            .menu {
+                background-color: lightgray;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <nav class="navbar navbar-light bg-light menu">
+                    <a href="/main" class="navbar-brand">main page</a>
+                    <a href="/logout" class="navbar-brand">logout</a>
+                </nav>
+                <div>
+                    <div id="error"></div>
+                    <label>You can use MasterCard and Visa</label>
+                    <div>
+                        <h3>Card number:</h3>    
+                        <input type="number" id="card">
+                    </div>
+                    <hr>
+                    <div>Expiry date &#40;required&#41;
+                        <select id="exMonth" title="select a month">
+                        <option value="0">Enter month</option>
+                            <option value="01">01</option>
+                            <option value="02">02</option>
+                            <option value="03">03</option>
+                            <option value="04">04</option>
+                            <option value="05">05</option>
+                            <option value="06">06</option>
+                            <option value="07">07</option>
+                            <option value="08">08</option>
+                            <option value="09">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                        
+                        <select id="exYear" title="select a year">
+                            <option value="0">Enter year</option>
+                            <option value="2013">2013</option>
+                            <option value="2014">2014</option>
+                            <option value="2015">2015</option>
+                            <option value="2016">2016</option>
+                            <option value="2017">2017</option>
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                            <option value="2031">2031</option>
+                        </select>
+                    </div>
+                    <hr>
+                    <div>
+                        <h3>CVV:</h3>
+                        <input type="number" id="cvv">
+                    </div>
+                    <hr>
+                    <div>
+                        <button class="btn btn-warning btn-lg" onclick="makeZamowienie(document.getElementById('card').value, document.getElementById('exYear'), document.getElementById('exMonth'), document.getElementById('cvv').value)">
+                            Pay at the place of receipt
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        //testcard: 5424180123456789
+        let errorField = document.getElementById('error')
+        
+        const validateCardNumber = number => {
+            const regex = new RegExp("^[0-9]{13,19}$");
+            if (!regex.test(number)){
+                return false;
+            }
+            return luhnCheck(number);
+        }
+        const validateCvv = number =>{
+            const regex = new RegExp("^[0-9]{3,4}$");
+            if (!regex.test(number)){
+                return false;
+            }
+            return true
+        }
+        //Validating credit card in javascript with Luhn’s algorithm.
+        const luhnCheck = val => {
+            let checksum = 0; // running checksum total
+            let j = 1; // takes value of 1 or 2
+            // Process each digit one by one starting from the last
+            for (let i = val.length - 1; i >= 0; i--) {
+              let calc = 0;
+              // Extract the next digit and multiply by 1 or 2 on alternative digits.
+              calc = Number(val.charAt(i)) * j;
+              // If the result is in two digits add 1 to the checksum total
+              if (calc > 9) {
+                checksum = checksum + 1;
+                calc = calc - 10;
+              }
+              // Add the units element to the checksum total
+              checksum = checksum + calc;
+              // Switch the value of j
+              if (j == 1) {
+                j = 2;
+              } else {
+                j = 1;
+              }
+            }
+            //Check if it is divisible by 10 or not.
+            return (checksum % 10) == 0;
+        }
+
+        const response = (success, message = null, type = null) => ({
+            message,
+            success,
+            type
+        });
+
+        const ccErrors = [];
+        ccErrors [0] = "No card number provided";
+        ccErrors [1] = "Credit card number is in invalid format";
+        ccErrors [2] = "Credit card number is invalid";
+        ccErrors [3] = "Credit card number has an inappropriate number of digits";
+
+        const cards = [];
+        cards [0] = {name: "Visa", 
+                    length: "13,16", 
+                    prefixes: "4",};
+        cards [1] = {name: "MasterCard", 
+                    length: "16", 
+                    prefixes: "51,52,53,54,55"};
+        
+        const makeZamowienie = (cardnumber, exYear, exMonth, cvv) => {
+            if (cardnumber.length ===0)  { 
+                errorField.classList.add("alert")
+                errorField.classList.add("alert-danger")
+                errorField.innerHTML=ccErrors[0];
+            }else{         
+                if(!validateCardNumber(cardnumber)){
+                    errorField.classList.add("alert")
+                    errorField.classList.add("alert-danger")
+                    errorField.innerHTML=ccErrors[1];
+                }else{
+                    // The following are the card-specific checks we undertake.
+                    let lengthValid = false;
+                    let prefixValid = false; 
+                    
+                    // Check if card belongs to any organization
+                    for(let i = 0; i < cards.length; i++){
+                        const prefix = cards[i].prefixes.split(",");
+                        
+                        for (let j = 0; j < prefix.length; j++) {
+                            const exp = new RegExp ("^" + prefix[j]);
+                            if (exp.test (cardnumber)) {
+                                prefixValid = true;
+                            }
+                        }
+                        
+                        if(prefixValid){
+                        const lengths = cards[i].length.split(",");
+                        // Now see if its of valid length;
+                        for (let j=0; j < lengths.length; j++) {
+                            if (cardnumber.length == lengths[j]) {
+                            lengthValid = true;
+                            }
+                        }
+                        }
+                         
+                        if(lengthValid && prefixValid){
+                            if(validateCvv(cvv)){
+                                var today, someday;
+                                let exMonthValue=exMonth.options[exMonth.selectedIndex].value;
+                                let exYearValue=exYear.options[exYear.selectedIndex].value;
+                                today = new Date();
+                                someday = new Date();
+                                someday.setFullYear(exYear, exMonth, 1);
+
+                                if (someday < today) {
+                                    errorField.classList.add("alert")
+                                    errorField.classList.add("alert-danger")
+                                    errorField.innerHTML="The expiry date is before today's date. Please select a valid expiry date";
+                                }else{
+                                    axios.post(`/makeZamowienie`, {game_id: '<%= game_id%>', sposob_dostawy: '<%= sposob_dostawy%>'}).then(()=>{
+                                        location.href='/historia_zamowien'
+                                    })
+                                }
+                            }else{
+                                errorField.classList.add("alert")
+                                errorField.classList.add("alert-danger")
+                                errorField.innerHTML='Wrong cvv';
+                            }
+                        }  
+                    }
+                    if (!prefixValid) {
+                        errorField.classList.add("alert")
+                        errorField.classList.add("alert-danger")
+                        errorField.innerHTML=ccErrors[2];
+                    }
+                    if (!lengthValid) {
+                        errorField.classList.add("alert")
+                        errorField.classList.add("alert-danger")
+                        errorField.innerHTML=ccErrors[3];
+                    }
+                }
+            }          
+        }
+    </script>
+</html>

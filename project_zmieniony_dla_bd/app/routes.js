@@ -76,10 +76,41 @@ module.exports = function(app, neo_driver) {
         const games = await gameManage.getGamesInArray(neo_driver)
         res.status(200).send(games)
     })
+
     app.get('/historia_zamowien', isLoggedIn, async function(req, res) {
         const zamowienia = await zamowienieManage.getallZamowieniaOfUser(req.cookies._id, neo_driver);
         res.render('users/historia_zamowien.ejs', {
             zamowienia: zamowienia
+        })
+    })
+    app.get('/zamowienie/:game_id', isLoggedIn, function(req, res) {
+        const game = gameManage.findGameById(req.params.game_id, neo_driver)
+        res.render('users/zamowienie.ejs', {
+            game_id: req.params.game_id,
+            gameTitle: game.title,
+            gamePrice: game.price,
+            gamePublisher: game.publisher,
+            address: res.locals.user.address
+        })
+    })
+    app.get('/zamowienie/:game_id/payOnline', isLoggedIn, function(req, res) {
+        const game = gameManage.findGameById(req.params.game_id, neo_driver)
+        res.render('users/payOnline.ejs', {
+            game_id: req.params.game_id,
+            gameTitle: game.title,
+            gamePrice: game.price,
+            gamePublisher: game.publisher,
+            sposob_dostawy: req.query.sposob_dostawy,
+            address: res.locals.user.address
+        })
+    })
+    app.post('/makeZamowienie', isLoggedIn, function(req, res) {
+        const user_id = req.cookies._id
+        //req.body = { game_id, sposob_dostawy, total_price }
+        zamowienieManage.createZamowienie(req.body, user_id, neo_driver).then((zamoweinie)=>{
+            res.sendStatus(200)
+        }).catch(err=>{
+            console.log(err)
         })
     })
 
@@ -114,7 +145,12 @@ module.exports = function(app, neo_driver) {
             }); 
         })
     });
-    app.delete('/removeGame',isLoggedIn, isAdmin, function(req, res) { //restfull delete
+
+
+    //TUTAJ TRZEBA DOKOŃCZYC!!!!!
+    //TUTAJ TRZEBA DOKOŃCZYC!!!!!
+    //TUTAJ TRZEBA DOKOŃCZYC!!!!!
+    app.delete('/removeGame',isLoggedIn, isAdmin, function(req, res) { //TUTAJ TRZEBA DOKOŃCZYC!!!!!
         console.log("removegame?")
         const neo_session = neo_driver.session()
         //const second_neo_session = neo_driver.session()

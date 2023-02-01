@@ -75,9 +75,12 @@
                 price: '<%= game.price%>',
             })
         '<%})%>'
-        const removeGame = (id) =>{
-            //jeszcze nie napisałęm :)
-        }
+        //!!!!!!!!!!!!!!!!!!
+        const removeGame = (gameId) =>{
+            axios.delete(`/removeGame?game_id=${gameId}`).then((res)=>{
+                open(location, '_self')//.close()
+            })
+        }  //jeszcze to nie testowałem
         const loadGames = () =>{
             let gamesUl = document.getElementById('games')
             let child = gamesUl.lastElementChild; 

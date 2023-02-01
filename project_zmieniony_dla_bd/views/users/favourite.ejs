@@ -32,12 +32,12 @@
                     <%yourGames.forEach( game => {%>
                         <li>
                             <span><%= game.title%></span>
+                            <a class="btn btn-default" href="/gameInfo/<%= game._id%>">
+                                Game info
+                            </a>
                             <button class="btn btn-default" onclick="removeFromFavourite('<%= game._id%>')">
-                                <span class="fa"></span>
                                 Remove from favourites
                             </button>
-                            <button id="description_button:<%= game._id%>" onclick="loadGame('<%= game._id%>', '<%= game.title%>', '<%= game.publisher%>', '<%= game.genre%>', '<%= game.release_date%>', '<%= game.short_description%>', '<%= game.price%>')">See more...</button>
-                            <div id="div:<%= game._id%>"></div>
                         </li>
                     <%})%>
                 </ul>
@@ -51,46 +51,7 @@
                 open(location, '_self')
             })
         }
-        function loadGame(id, title, publisher, genre, release_date, short_description, price){
-            let shownGame = document.getElementById(`div:${id}`) //main div
-
-            let titlediv = document.createElement("div");
-            let publisherdiv = document.createElement("div");
-            let genrediv = document.createElement("div");
-            let release_datediv = document.createElement("div");
-            let short_descriptiondiv = document.createElement("div");
-            let pricediv = document.createElement("div");
-
-            titlediv.innerHTML = title
-            publisherdiv.innerHTML = publisher
-            genrediv.innerHTML = genre
-            release_datediv.innerHTML = release_date
-            short_descriptiondiv.innerHTML = short_description
-            pricediv.innerHTML = price
-
-            shownGame.appendChild(titlediv)
-            shownGame.appendChild(publisherdiv)
-            shownGame.appendChild(genrediv)
-            shownGame.appendChild(release_datediv)
-            shownGame.appendChild(short_descriptiondiv)
-            shownGame.appendChild(pricediv)
-
-            let button = document.getElementById(`description_button:${id}`)
-            button.innerHTML = 'Hide...'
-            button.onclick = function(){
-                shownGame.removeChild(titlediv)
-                shownGame.removeChild(publisherdiv)
-                shownGame.removeChild(genrediv)
-                shownGame.removeChild(release_datediv)
-                shownGame.removeChild(short_descriptiondiv)
-                shownGame.removeChild(pricediv)
-                button.innerHTML = 'See more...'
-                button.onclick = function(){
-                    loadGame(id, title, publisher, genre, release_date, short_description, price)
-                }
-            }
-
-        }
+        
 
     </script>
 </html>
