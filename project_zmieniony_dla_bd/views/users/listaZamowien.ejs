@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Profile</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <style>
+            body        { padding-top:80px; }
+            .menu {
+                background-color: lightgray;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <nav class="navbar navbar-light bg-light menu">
+                    <a href="/main" class="navbar-brand">main page</a>
+                    <a href="/logout" class="navbar-brand">logout</a>
+                </nav>
+                <h1><span class="fa"></span>Zamowienia</h1>
+                <div>
+                    <input type="text" id="userId" class="form-control">
+                    <button class="btn" onclick="filterById(document.getElementById('userId').value)" id="fiterById">Filter by userId</button>
+                </div>
+                <hr>
+                <ul id="all_zamowienia">
+                </ul>
+            </div>
+        </div>
+    </body>
+    <script>
+        let all_zamowienia = []
+        '<%all_zamowienia.forEach(zamowienie=>{%>'
+            console.log('<%= zamowienie._id%>')
+            all_zamowienia.push({
+                _id: '<%= zamowienie._id%>',
+                user_id: '<%= zamowienie.user_id%>',
+                status: '<%= zamowienie.status%>',
+            })
+        '<%})%>'
+        console.log(all_zamowienia)
+
+        const loadZamowienia= () =>{
+            let zamowieniaUl = document.getElementById('all_zamowienia')
+            let child = zamowieniaUl.lastElementChild; 
+            while (child) {
+                zamowieniaUl.removeChild(child);
+                child = zamowieniaUl.lastElementChild;
+            }
+            all_zamowienia.forEach(zamowienie => {
+                let newLi = document.createElement('li');
+                newLi.id = zamowienie._id
+    
+                let newLink = document.createElement('a');
+                newLink.innerHTML = zamowienie._id;
+                newLink.classList.add("btn")
+                newLink.classList.add("btn-default")
+                newLink.href=`/zamowienie_edit/${zamowienie._id}`
+
+                let newLabel = document.createElement('label');
+                newLabel.innerHTML = 'UserId:'
+
+                let newDiv = document.createElement('div');
+                newDiv.innerHTML = zamowienie.user_id;
+
+                let statusLabel = document.createElement('label');
+                statusLabel.innerHTML = 'Status: '
+                let statusDiv = document.createElement('div');
+                statusDiv.innerHTML = zamowienie.status;
+
+                let newLabel2 = document.createElement('label');
+                newLabel2.innerHTML = 'Zamowienie:'
+    
+                newLi.appendChild(newLabel)
+                newLi.appendChild(newDiv)
+                newLi.appendChild(statusLabel)
+                newLi.appendChild(statusDiv)
+                newLi.appendChild(newLabel2)
+                newLi.appendChild(newLink)
+                zamowieniaUl.appendChild(newLi)
+            })
+        }
+        window.addEventListener('load', function(event){
+            loadZamowienia()
+        })
+
+        const filterById= (id) =>{
+            all_zamowienia = all_zamowienia.filter(zam => (
+                zam.user_id===id
+            ))
+            loadZamowienia()
+        } 
+    </script>
+</html>

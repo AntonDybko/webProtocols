@@ -89,20 +89,40 @@ module.exports = function(app, neo_driver) {
             all_zamowienia: all_zamowienia
         })
     })
-    app.get('/zamowienie/:game_id', isLoggedIn, function(req, res) {
-        const game = gameManage.findGameById(req.params.game_id, neo_driver)
+    app.put('/updateZamowienie', isLoggedIn, isAdmin, async function(req, res) {
+        const newStatus = req.body.newStatus
+        const zamowienie_id = req.query.zamowienie_id
+        zamowienieManage.changeStatusOfZamowienie(zamowienie_id, newStatus, neo_driver).then(()=>{
+            res.sendStatus(200)
+        }).catch(error=>{
+            console.log(error)
+            res.sendStatus(400)
+        })
+    })
+    app.get('/zamowienie_edit/:zamowienie_id', isLoggedIn, isAdmin, async function(req, res) {
+        const zamowienie_id = req.params.zamowienie_id.replace('.', '')
+        const zamowienie = await zamowienieManage.getZamowienieById(zamowienie_id, neo_driver);
+        res.render('users/editZamowienie.ejs', {
+            zamowienie: zamowienie
+        })
+    })
+    app.get('/zamowienie/:game_id', isLoggedIn, async function(req, res) {
+        const game_id= req.params.game_id.replace('.', '')
+        console.log(game_id)
+        const game = await gameManage.findGameById(game_id, neo_driver)
         res.render('users/zamowienie.ejs', {
-            game_id: req.params.game_id,
+            game_id: game_id,
             gameTitle: game.title,
             gamePrice: game.price,
             gamePublisher: game.publisher,
             address: res.locals.user.address
         })
     })
-    app.get('/zamowienie/:game_id/payOnline', isLoggedIn, function(req, res) {
-        const game = gameManage.findGameById(req.params.game_id, neo_driver)
+    app.get('/zamowienie/:game_id/payOnline', isLoggedIn, async function(req, res) {
+        const game_id= req.params.game_id.replace('.', '')
+        const game = await gameManage.findGameById(game_id, neo_driver)
         res.render('users/payOnline.ejs', {
-            game_id: req.params.game_id,
+            game_id: game_id,
             gameTitle: game.title,
             gamePrice: game.price,
             gamePublisher: game.publisher,
@@ -153,31 +173,17 @@ module.exports = function(app, neo_driver) {
     });
 
 
-    //TUTAJ TRZEBA DOKOŃCZYC!!!!!
-    //TUTAJ TRZEBA DOKOŃCZYC!!!!!
-    //TUTAJ TRZEBA DOKOŃCZYC!!!!!
-    app.delete('/removeGame',isLoggedIn, isAdmin, function(req, res) { //TUTAJ TRZEBA DOKOŃCZYC!!!!!
-        console.log("removegame?")
-        const neo_session = neo_driver.session()
-        //const second_neo_session = neo_driver.session()
+    app.delete('/removeGame',isLoggedIn, isAdmin, function(req, res) { 
         const game_id = req.query.game_id.replace('.', '')
-        neo_session.run("MATCH (game:Game {_id: $game_id})-[r:COMMENT]->() DELETE r", { game_id: game_id}).then(()=>{
-            console.log("clear COMMENT dependencies")
-            neo_session.run("MATCH ()-[r:ZAMOWIENIE]->(game:Game {_id: $game_id}) DELETE r", { game_id: game_id}).then(results=>{
-                console.log("clear ZAMOWIENIE dependencies")
-                neo_session.run("MATCH (game:Game {_id: $game_id}) DELETE game", { game_id: game_id}).then(results=>{
-                    console.log("DELETE game")
-                    res.status(204).json(null)
-                }).catch(function(error){
-                    console.log(error);
-                })
-            }).catch(function(error){
-                console.log(error);
-            })
-        }).catch(function(error){
-            console.log(error);
+        gameManage.removeGame(game_id, neo_driver).then(res=>{
+            if(res==='success'){
+                res.sendStatus(204)
+            }else{
+                res.sendStatus(400)
+            }
         })
     });
+
     app.get('/gameInfo/:game_id',isLoggedIn, async function(req, res) {
         const game_id = req.params.game_id.replace('.', '');
         const game = await gameManage.findGameById(game_id, neo_driver);
@@ -243,7 +249,7 @@ module.exports = function(app, neo_driver) {
         }
 
     });
-    app.put('/addToFavourite',isLoggedIn, async function(req, res){ //restfull put
+    app.put('/addToFavourite', isLoggedIn, async function(req, res){ //restfull put
         const game_id = req.query.game_id
         const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
         const gameIds = []

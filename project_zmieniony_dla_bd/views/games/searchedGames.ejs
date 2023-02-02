@@ -78,9 +78,9 @@
         //!!!!!!!!!!!!!!!!!!
         const removeGame = (gameId) =>{
             axios.delete(`/removeGame?game_id=${gameId}`).then((res)=>{
-                open(location, '_self')//.close()
+                open(location, '_self')
             })
-        }  //jeszcze to nie testowałem
+        }
         const loadGames = () =>{
             let gamesUl = document.getElementById('games')
             let child = gamesUl.lastElementChild; 
@@ -112,7 +112,9 @@
                     deleteButton.classList.add("btn");
                     deleteButton.classList.add("btn-default");
                     deleteButton.classList.add("red");
-                    deleteButton.onclick=removeGame(game._id);
+                    deleteButton.onclick=()=>{
+                        removeGame(game._id)
+                    };
                     deleteButton.innerHTML = 'delete game'
 
                     newLi.appendChild(updateLink);
@@ -204,16 +206,6 @@
                 sortDescendingByPrice()
             }
         }
-        /*const updateGame = (gameId) =>{
-            axios.put(`/updateGame/${gameId}`, )
-        }*/
-        /*const removeGame = (gameId) =>{
-            axios.delete(`/removeGame/${game_id}`)
-        }   */
-        /*const removeGame = (gameId) =>{
-            axios.delete(`/removeGame/${gameId}`).then(
-                open(location, '_self').close()
-            )
-        }*/
+
     </script>
 </html>

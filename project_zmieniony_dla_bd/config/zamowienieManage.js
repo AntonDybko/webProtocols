@@ -18,10 +18,21 @@ module.exports = {
             return zamowienia
         }).catch(err => console.log(err))
     },
+    getZamowienieById: function(_id, neo_driver){
+        const neo_session = neo_driver.session()
+        return neo_session.run(
+            "MATCH (z:Zamowienie {_id: $_id}) RETURN z",
+            {
+                _id: _id
+            }
+        ).then(results => {
+            return _.get(results.records[0].get('z'), 'properties')
+        }).catch(err => console.log(err))
+    },
     getallZamowienia: function(neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
-            "MATCH (u:Zamowienie)-[r:ORDER]->(z:Zamowienie) RETURN z"
+            "MATCH (u:User)-[r:ORDER]->(z:Zamowienie) RETURN z"
         ).then(results => {
             const zamowienia = []
             results.records.forEach(record => {
@@ -42,14 +53,15 @@ module.exports = {
             let total_price = _.get(results.records[0].get('game'), 'properties').price
             console.log(zam_body.sposob_dostawy)
             if(zam_body.sposob_dostawy === 'fast'){
-                total_price = total_price + 9.99
+                total_price = total_price + 10
             }
             if(zam_body.sposob_dostawy)
             if(_.get(results.records[0].get('game'), 'properties') != undefined && _.get(results.records[0].get('user'), 'properties') != undefined){
-                return session.run('CREATE (z:Zamowienie {_id: $_id, status: $status, sposob_dostawy: $sposob_dostawy, gameId: $gameId, gameTitle: $gameTitle, gamePrice: $gamePrice, address: $address}) RETURN z', {
+                return session.run('CREATE (z:Zamowienie {_id: $_id, user_id: $user_id, status: $status, sposob_dostawy: $sposob_dostawy, gameId: $gameId, gameTitle: $gameTitle, gamePrice: $gamePrice, address: $address}) RETURN z', {
                     _id: uuidv4(),
                     status: 'PENDING',
                     gameId: zam_body.game_id,
+                    user_id: user_id,
                     sposob_dostawy: zam_body.sposob_dostawy,
                     gameTitle: _.get(results.records[0].get('game'), 'properties').title,
                     gamePrice: total_price,
@@ -67,10 +79,10 @@ module.exports = {
             }
         })
     },
-    changeStatusOfZamowienie:function(zamoweinie_id, newStatus, neo_driver){
+    changeStatusOfZamowienie:function(zamowienie_id, newStatus, neo_driver){
         const session = neo_driver.session()
-        return session.run('MATCH (z:Zamowienie {_id: $zamoweinie_id}) SET z.status=$newStatus RETURN z', {
-            zamoweinie_id: zamoweinie_id,
+        return session.run('MATCH (z:Zamowienie {_id: $zamowienie_id}) SET z.status=$newStatus RETURN z', {
+            zamowienie_id: zamowienie_id,
             newStatus: newStatus,
         }).then(results=>{
             console.log(_.get(results.records[0].get('z'), 'properties'))

@@ -163,5 +163,26 @@ module.exports = {
             }
         })
     },
-    
+    removeGame:function(game_id, neo_driver){
+        const neo_session = neo_driver.session()
+        neo_session.run("MATCH ()-[r:REVIEW]->(game:Game {_id: $game_id}) DELETE r", { game_id: game_id}).then(()=>{
+            console.log("clear REVIEW dependencies")
+            neo_session.run("MATCH ()-[r:FAVOURITE]->(game:Game {_id: $game_id}) DELETE r", { game_id: game_id}).then(results=>{
+                console.log("clear FAVOURITE dependencies")
+                neo_session.run("MATCH (game:Game {_id: $game_id}) DELETE game", { game_id: game_id}).then(results=>{
+                    console.log("DELETE game")
+                    return 'success'
+                }).catch(function(error){
+                    console.log(error);
+                    return error
+                })
+            }).catch(function(error){
+                console.log(error);
+                return error
+            })
+        }).catch(function(error){
+            console.log(error);
+            return error
+        })
+    },
 }
