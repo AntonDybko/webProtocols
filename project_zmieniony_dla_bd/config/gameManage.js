@@ -1,23 +1,34 @@
-//var Game = require('../app/models/game.js');
 const { _  }= require('underscore');
 const { v4: uuidv4 } = require('uuid');
 module.exports = {
     addGame: function(gameBody, neo_driver){
         const neo_session = neo_driver.session()
-        return neo_session.run(
-            "CREATE (game:Game{_id: $id, title: $title, publisher: $publisher, release_date: $release_date, genre: $genre, short_description: $short_description, price: $price}) RETURN game",
-            {   
-                id: uuidv4(),
-                title: gameBody.title,
-                publisher: gameBody.publisher,
-                genre: gameBody.genre,
-                release_date: gameBody.release_date,
-                short_description: gameBody.short_description,
-                price: gameBody.price
+        return neo_session.run("MATCH (game:Game) RETURN game")
+        .then(results => {
+            const games = []
+            results.records.forEach(record => {
+                games.push(_.get(record.get('game'), 'properties').title)
+            })
+            if(!games.includes(gameBody.title)){
+                return neo_session.run(
+                    "CREATE (game:Game{_id: $id, title: $title, publisher: $publisher, release_date: $release_date, genre: $genre, short_description: $short_description, price: $price}) RETURN game",
+                    {   
+                        id: uuidv4(),
+                        title: gameBody.title,
+                        publisher: gameBody.publisher,
+                        genre: gameBody.genre,
+                        release_date: gameBody.release_date,
+                        short_description: gameBody.short_description,
+                        price: gameBody.price
+                    }
+                ).then((results)=>{
+                    console.log(gameBody.title + " saved to games store.")
+                    return _.get(results.records[0].get('game'), 'properties');
+                })
+            }else{
+                console.log('game exists in db') // test console.log
+                return null
             }
-        ).then((results)=>{
-            console.log(gameBody.title + " saved to games store.")
-            return _.get(results.records[0].get('game'), 'properties');
         })
     },
     updateGame:function(game_id, body, neo_driver){

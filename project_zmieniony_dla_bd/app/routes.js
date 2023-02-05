@@ -1,19 +1,10 @@
 const gameManage = require("../config/gameManage");
-//var Game = require('../app/models/game.js');
-//var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
 const statistics = require("../config/statistics.js");
 var jwt = require('jsonwebtoken');
-//var randomstring = require("randomstring");
 const { _  }= require('underscore');
 var bcrypt = require('bcryptjs');
 const zamowienieManage = require('../config/zamowienieManage')
-//const e = require("connect-flash");
-//const server = require("../server");
-//const { get, result } = require("underscore");
-//const { requiresAuth } = require('express-openid-connect')
-
-//cannot use req.params in git requests, nee dto use req.query!!!!!!!!
 
 module.exports = function(app, neo_driver) {
     app.get('/', function(req, res) {
@@ -156,7 +147,6 @@ module.exports = function(app, neo_driver) {
     })
     app.post('/makeZamowienie', isLoggedIn, function(req, res) {
         const user_id = req.cookies._id
-        //req.body = { game_id, sposob_dostawy, total_price }
         zamowienieManage.createZamowienie(req.body, user_id, neo_driver).then((zamoweinie)=>{
             res.sendStatus(200)
         }).catch(err=>{
@@ -166,10 +156,10 @@ module.exports = function(app, neo_driver) {
 
     //games
     app.get('/manageGames',isLoggedIn, isAdmin, function(req, res) {
-        res.render('games/manageGames.ejs'); //?????
+        res.render('games/manageGames.ejs'); 
     });
     app.get('/addGame', isLoggedIn, isAdmin, function(req, res) { 
-        res.render('games/addGame.ejs'); //?????
+        res.render('games/addGame.ejs'); 
     });
     app.get('/listOfGames', isLoggedIn, isAdmin, function(req, res) {
         const neo_session = neo_driver.session()
@@ -185,7 +175,7 @@ module.exports = function(app, neo_driver) {
         })
     });
 
-    app.get('/updateGame/:game_id',isLoggedIn, isAdmin, function(req, res) { //?...
+    app.get('/updateGame/:game_id',isLoggedIn, isAdmin, function(req, res) { 
         const game_id = req.params.game_id.replace('.', '')
         const neo_session = neo_driver.session()
         neo_session.run("MATCH (game:Game {_id: $game_id}) RETURN game", { game_id: game_id})
@@ -257,7 +247,7 @@ module.exports = function(app, neo_driver) {
         
 
     });
-    app.delete('/removeFromFavourite', isLoggedIn, async function(req, res) { //restfull delete
+    app.delete('/removeFromFavourite', isLoggedIn, async function(req, res) { 
         const game_id = req.query.game_id
         const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
         const gameIds = []
@@ -274,7 +264,7 @@ module.exports = function(app, neo_driver) {
         }
 
     });
-    app.put('/addToFavourite', isLoggedIn, async function(req, res){ //restfull put
+    app.put('/addToFavourite', isLoggedIn, async function(req, res){ 
         const game_id = req.query.game_id
         const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
         const gameIds = []
@@ -295,7 +285,6 @@ module.exports = function(app, neo_driver) {
 
     async function isLoggedIn(req, res, next){
         const token = req.cookies.accessToken
-        //const api_key = req.cookies.x_api_key;
         const _id = req.cookies._id;
         if(_id != undefined && token !=undefined){
             const neo_session = neo_driver.session()
@@ -390,7 +379,6 @@ module.exports = function(app, neo_driver) {
                         console.log(newUser)
                         const newAccessToken = jwt.sign(newUser, newUser.api_key, { expiresIn: '1d'})
                         res.cookie('accessToken', newAccessToken)
-                        //res.redirect('/profile')
                         res.sendStatus(200)
                     }).catch((error)=>{
                         console.log(error)
@@ -448,14 +436,13 @@ module.exports = function(app, neo_driver) {
             res.redirect('/manageGames');
         })
     });
-    app.put('/updateGame',isLoggedIn, isAdmin, function(req, res) { //restfull put
+    app.put('/updateGame',isLoggedIn, isAdmin, function(req, res) {
         const game_id = req.query.game_id.replace('.', '')
         gameManage.updateGame(game_id, req.body, neo_driver).then(()=>{
             res.status(200).json(req.body);
         })
     });
     app.post('/importGamesFromJsonFile',isLoggedIn, isAdmin, function(req, res){
-        //console.log(req.body)
         req.body.forEach(game=>{
             let gameToAdd = {
                 title: game.title,
@@ -489,7 +476,6 @@ module.exports = function(app, neo_driver) {
             gamesList: filteredGames,
         })
     });
-    //user posts
     
     
 

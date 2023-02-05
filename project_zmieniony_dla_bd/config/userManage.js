@@ -1,8 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
-const { _, result  }= require('underscore');
+const { _  }= require('underscore');
 var bcrypt = require('bcryptjs');
 var randomstring = require("randomstring");
-const { Relationship } = require('neo4j-driver');
 module.exports = {
     register:function(neo_driver, email, password) {
         const session = neo_driver.session()
@@ -71,22 +70,12 @@ module.exports = {
     addToFavourite:function(game_id, user_id, neo_driver){
         const session = neo_driver.session()
         console.log(game_id, user_id)
-        /*return session.run('MATCH (user:User {_id: $user_id})-[r:FAVOURITE]->(game:Game {_id: $game_id}) RETURN r', {
-            user_id: user_id,
-            game_id: game_id
-        }).then(relationships => {
-            if(relationships.records.length===0){*/
         return session.run('MATCH (user:User), (game:Game) WHERE user._id=$user_id AND game._id=$game_id CREATE (user)-[r:FAVOURITE]->(game) RETURN r', {
             user_id: user_id,
             game_id: game_id
         }).then(() => {
             return 'success'
         })
-            /*}
-            else{
-                return "game is already in favourites"
-            }
-        })*/
     },
     removeFromFavourite:function(game_id, user_id, neo_driver){
         const session = neo_driver.session()
