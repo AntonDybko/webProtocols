@@ -193,7 +193,7 @@
                                 let exYearValue=exYear.options[exYear.selectedIndex].value;
                                 today = new Date();
                                 someday = new Date();
-                                someday.setFullYear(exYear, exMonth, 1);
+                                someday.setFullYear(exYearValue, exMonthValue, 1);
 
                                 if (someday < today) {
                                     errorField.classList.add("alert")

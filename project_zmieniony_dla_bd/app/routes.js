@@ -58,9 +58,6 @@ module.exports = function(app, neo_driver) {
         }
         res.render('users/edit_profile.ejs')
     });
-    app.get('/profile', isLoggedIn,  function(req, res) {
-        res.render('users/profile.ejs')
-    });
 
     app.get('/statistics', isLoggedIn, isAdmin, async function(req, res) {
         res.render('statistics/statisticsMainWindow.ejs')
@@ -125,33 +122,46 @@ module.exports = function(app, neo_driver) {
         const game_id= req.params.game_id.replace('.', '')
         console.log(game_id)
         const game = await gameManage.findGameById(game_id, neo_driver)
-        res.render('users/zamowienie.ejs', {
-            game_id: game_id,
-            gameTitle: game.title,
-            gamePrice: game.price,
-            gamePublisher: game.publisher,
-            address: res.locals.user.address
-        })
+        if(res.locals.user.address != ''){
+            res.render('users/zamowienie.ejs', {
+                game_id: game_id,
+                gameTitle: game.title,
+                gamePrice: game.price,
+                gamePublisher: game.publisher,
+                address: res.locals.user.address
+            })
+        }else{
+            res.send('you need to update address in your profile to make orders')
+        }
     })
     app.get('/zamowienie/:game_id/payOnline', isLoggedIn, async function(req, res) {
         const game_id= req.params.game_id.replace('.', '')
         const game = await gameManage.findGameById(game_id, neo_driver)
-        res.render('users/payOnline.ejs', {
-            game_id: game_id,
-            gameTitle: game.title,
-            gamePrice: game.price,
-            gamePublisher: game.publisher,
-            sposob_dostawy: req.query.sposob_dostawy,
-            address: res.locals.user.address
-        })
+        if(res.locals.user.address != ''){
+            res.render('users/payOnline.ejs', {
+                game_id: game_id,
+                gameTitle: game.title,
+                gamePrice: game.price,
+                gamePublisher: game.publisher,
+                sposob_dostawy: req.query.sposob_dostawy,
+                address: res.locals.user.address
+            })
+        }else{
+            res.send('you need to update address in your profile to make orders')
+        }
     })
     app.post('/makeZamowienie', isLoggedIn, function(req, res) {
         const user_id = req.cookies._id
-        zamowienieManage.createZamowienie(req.body, user_id, neo_driver).then((zamoweinie)=>{
-            res.sendStatus(200)
-        }).catch(err=>{
-            console.log(err)
-        })
+        console.log(res.locals.user.address)
+        if(res.locals.user.address != ''){
+            zamowienieManage.createZamowienie(req.body, user_id, neo_driver).then((zamoweinie)=>{
+                res.sendStatus(200)
+            }).catch(err=>{
+                console.log(err)
+            })
+        }else{
+            res.send('you need to update address in your profile to make orders')
+        }
     })
 
     //games
@@ -202,7 +212,7 @@ module.exports = function(app, neo_driver) {
     app.get('/gameInfo/:game_id',isLoggedIn, async function(req, res) {
         const game_id = req.params.game_id.replace('.', '');
         const game = await gameManage.findGameById(game_id, neo_driver);
-        const reviews = await gameManage.getComments(game_id, neo_driver)
+        const reviews = await gameManage.getReviewsToGame(game_id, neo_driver)
 
         const favouriteGames = await userManage.getFavouriteGames(req.cookies._id, neo_driver)
         const gameIds = []
@@ -328,7 +338,7 @@ module.exports = function(app, neo_driver) {
     }
 
     app.post('/signup', function(req, res){
-        userManage.register(neo_session, req.body.email, req.body.password).then(user =>{
+        userManage.register(neo_driver, req.body.email, req.body.password).then(user =>{
             const key = user.api_key
             const accessToken = jwt.sign(user, key, { expiresIn: '1d'})
 
@@ -395,6 +405,11 @@ module.exports = function(app, neo_driver) {
             res.status(400).json({error: error});
         }
     });
+    app.get('/change_password', isLoggedIn, function(req, res) {
+        res.render('users/change_password.ejs', {
+            error: req.query.error
+        })
+    })
     app.put('/change_password', isLoggedIn, function(req, res) {
         if(req.body.new_password === req.body.new_password_2){
             const neo_session = neo_driver.session();

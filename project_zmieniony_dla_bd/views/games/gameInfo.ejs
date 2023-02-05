@@ -62,10 +62,10 @@
                     <ul id="reviews">
                         <%reviews.forEach(review=>{%>
                             <li>
-                                <label><%= review.authorLogin%></label>
-                                <label>Mark</label>
+                                <div><label><%= review.authorLogin%></label></div>
+                                <label>Mark:</label>
                                 <div><%= review.mark%></div>
-                                <label>Text</label>
+                                <label>Text:</label>
                                 <div><%= review.text%></div>
                                 <!-- <%if(user._id===review.authorId || user.role==="ADMIN"){%>
                                     <button class="btn" onclick="deleteReview('<%= review.authorId%>')">Delete review</button>
@@ -115,7 +115,6 @@
                     error.innerHTML = "Text length must be greater than 1 and less then 200"
                 }else{
                     const newReview = {
-                        authorLogin: '<%= user.login%>',
                         authorId: '<%= user._id%>',
                         mark: mark,
                         text: text
@@ -128,7 +127,7 @@
 
         }
         const deleteReview = (review_id ,review_author_id) =>{
-            axios.delete(`/removeReview?game_id=<%=game._id%>&review_author_id=${review_author_id}&review_id=${review_id}`)
+            axios.delete(`removeReview?game_id=<%=game._id%>&review_author_id=${review_author_id}&review_id=${review_id}`)
             .then(res=> {
                 return res.data
             })

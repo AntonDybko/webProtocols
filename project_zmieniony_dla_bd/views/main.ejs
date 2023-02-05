@@ -132,10 +132,10 @@
     const sortDescendingByDate = () =>{
         games.sort((a, b) =>{
             if(a.release_date < b.release_date){
-                return -1
+                return 1
             }
             if(a.release_date > b.release_date){
-                return 1
+                return -1
             }
             return 0
         })
@@ -149,10 +149,10 @@
     const sortAscendingByDate = () =>{
         games.sort((a, b) =>{
             if(a.release_date < b.release_date){
-                return 1
+                return -1
             }
             if(a.release_date > b.release_date){
-                return -1
+                return 1
             }
             return 0
         })
@@ -166,10 +166,10 @@
     const sortDescendingByPrice = () =>{
         games.sort((a, b) =>{
             if(a.price < b.price){
-                return -1
+                return 1
             }
             if(a.price > b.price){
-                return 1
+                return -1
             }
             return 0
         })
@@ -183,10 +183,10 @@
     const sortAscendingByPrice = () =>{
         games.sort((a, b) =>{
             if(a.price < b.price){
-                return 1
+                return -1
             }
             if(a.price > b.price){
-                return -1
+                return 1
             }
             return 0
         })

@@ -75,8 +75,12 @@ module.exports = {
     },
     filterGamesByPublisher:function(publisher, neo_driver){
         const neo_session = neo_driver.session()
+        let wzorec = publisher
+        if(wzorec === ''){
+            wzorec = '^.*$'
+        }
         return neo_session.run(
-        'MATCH (game:Game) WHERE game.publisher =~ $publisher RETURN game', { publisher: publisher}
+        'MATCH (game:Game) WHERE game.publisher =~ $publisher RETURN game', { publisher: wzorec}
         ).then(results => {
             const games = []
             results.records.forEach(record => {
@@ -87,8 +91,12 @@ module.exports = {
     },
     filterGamesByGenre:function(genre, neo_driver){
         const neo_session = neo_driver.session()
+        let wzorec = genre
+        if(wzorec === ''){
+            wzorec = '^.*$'
+        }
         return neo_session.run(
-        'MATCH (game:Game) WHERE game.genre =~ $genre RETURN game', { genre: genre}
+        'MATCH (game:Game) WHERE game.genre =~ $genre RETURN game', { genre: wzorec}
         ).then(results => {
             const games = []
             results.records.forEach(record => {
@@ -105,16 +113,19 @@ module.exports = {
             return _.get(results.records[0].get('game'), 'properties')
         })
     },
-    getComments:function(game_id, neo_driver){
+    getReviewsToGame:function(game_id, neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
-            'MATCH (user:User)-[r:REVIEW]->(game:Game) WHERE game._id=$_id RETURN r',{
+            'MATCH (user:User)-[r:REVIEW]->(game:Game) WHERE game._id=$_id RETURN user, r',{
                 _id: game_id
             }
         ).then(reviews=>{
             const gamereviews = []
             reviews.records.forEach(review => {
-                gamereviews.push(_.get(review.get('r'), 'properties'))
+                let current_review = _.get(review.get('r'), 'properties')
+                current_review.authorLogin = _.get(review.get('user'), 'properties').login
+                gamereviews.push(current_review)
+                console.log(current_review) //test console.log
             })
             return gamereviews
         })
@@ -122,12 +133,11 @@ module.exports = {
     addReviewToGame:function(game_id, user_id, reviewBody, neo_driver){
         const neo_session = neo_driver.session()
         return neo_session.run(
-            'MATCH (user:User {_id: $user_id}), (game:Game {_id: $game_id}) CREATE (user)-[r:REVIEW {_id: $review_id, authorId: $authorId, authorLogin: $authorLogin, mark: $mark, text: $text}]->(game)',{
+            'MATCH (user:User {_id: $user_id}), (game:Game {_id: $game_id}) CREATE (user)-[r:REVIEW {_id: $review_id, authorId: $authorId, mark: $mark, text: $text}]->(game)',{
                 game_id: game_id,
                 user_id: user_id,
                 review_id: uuidv4(),
                 authorId: reviewBody.authorId,
-                authorLogin: reviewBody.authorLogin,
                 mark: reviewBody.mark,
                 text: reviewBody.text
             }

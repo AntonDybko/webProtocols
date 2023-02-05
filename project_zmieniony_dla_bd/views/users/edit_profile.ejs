@@ -67,6 +67,15 @@
         </div>
     </body>
     <script>
+        const validatePhone = phone => {
+            //[0-9]{3}-[0-9]{3}-[0-9]{4}
+            const regex = new RegExp("^[0-9]{3}-[0-9]{3}-[0-9]{4}$");
+            const regex2 = new RegExp("^$");
+            if (!regex.test(phone) && !regex2.test(phone)){
+                return false;
+            }
+            return true
+        }
         const updateUser = (gameId) =>{
             const login = document.getElementById('login').value
             const address = document.getElementById('address').value
@@ -80,15 +89,20 @@
                 password: password,
                 password_2: password_2
             }
-            axios.put(`/edit_profile`, body).then((res)=>{
-                console.log(res)
-                return res.data
-            }).then((data)=>{
-                window.location.replace('/profile')
-            }).catch(error => {
-                console.log(error.response.data)
-                window.location.replace(`/edit_profile?error=${error.response.data.error}`)
-            })
+            if(validatePhone(phone)){
+                axios.put(`/edit_profile`, body).then((res)=>{
+                    console.log(res)
+                    return res.data
+                }).then((data)=>{
+                    window.location.replace('/profile')
+                }).catch(error => {
+                    console.log(error.response.data)
+                    window.location.replace(`/edit_profile?error=${error.response.data.error}`)
+                })
+            }else{
+                let errorText = 'Invalid phone number'
+                window.location.replace(`/edit_profile?error=${errorText}`)
+            }
         }
     </script>
 </html>
