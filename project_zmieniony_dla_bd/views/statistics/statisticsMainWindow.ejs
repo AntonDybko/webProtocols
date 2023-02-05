@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Profile</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <style>
+            body        { padding-top:80px; }
+            .menu {
+                background-color: lightgray;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-sm-6 col-sm-offset-3">
+                <nav class="navbar navbar-light bg-light menu">
+                    <a href="/main" class="navbar-brand">main page</a>
+                    <a href="/logout" class="navbar-brand">logout</a>
+                </nav>
+                <h1><span class="fa"></span>Statistics</h1>
+                <ul>
+                    <li>
+                        <a class="btn btn-default" href="/statistics/popularityByComments">Popularity of games by amount of comments</a>
+                    </li>
+                    <li>
+                        <a class="btn btn-default" href="/statistics/popularityByFavourites">Popularity of games by favourites</a>
+                    </li>
+                    <li>
+                        <a class="btn btn-default" href="/statistics/popularityByOrders">Popularity of games by amount of orders</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>

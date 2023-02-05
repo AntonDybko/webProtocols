@@ -2,6 +2,7 @@ const gameManage = require("../config/gameManage");
 //var Game = require('../app/models/game.js');
 //var permissions = require('./permissions.js');
 const userManage = require("../config/userManage");
+const statistics = require("../config/statistics.js");
 var jwt = require('jsonwebtoken');
 //var randomstring = require("randomstring");
 const { _  }= require('underscore');
@@ -69,6 +70,29 @@ module.exports = function(app, neo_driver) {
     app.get('/profile', isLoggedIn,  function(req, res) {
         res.render('users/profile.ejs')
     });
+
+    app.get('/statistics', isLoggedIn, isAdmin, async function(req, res) {
+        res.render('statistics/statisticsMainWindow.ejs')
+    });
+    app.get('/statistics/popularityByComments', isLoggedIn, isAdmin, async function(req, res) {
+        const popularityByAmountOfComments = await statistics.popularityByAmountOfComments(neo_driver)
+        res.render('statistics/popularityByComments.ejs',{
+            popularityByAmountOfComments: popularityByAmountOfComments
+        })
+    });
+    app.get('/statistics/popularityByFavourites', isLoggedIn, isAdmin, async function(req, res) {
+        const popularityByFavourites = await statistics.popularityByFavourites(neo_driver)
+        res.render('statistics/popularityByFavourites.ejs',{
+            popularityByFavourites: popularityByFavourites
+        })
+    });
+    app.get('/statistics/popularityByOrders', isLoggedIn, isAdmin, async function(req, res) {
+        const popularityByOrders = await statistics.popularityByAmountOfOrders(neo_driver)
+        res.render('statistics/popularityByOrders.ejs',{
+            popularityByOrders: popularityByOrders
+        })
+    });
+
     app.get('/importGamesFromJsonFile', isLoggedIn,  isAdmin, function(req, res) {
         res.render('games/importGamesFromJsonFile.ejs')
     })
