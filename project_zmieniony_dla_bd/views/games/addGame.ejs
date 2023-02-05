@@ -23,6 +23,7 @@
                 </nav>
                 <h1><span class="fa"></span>Push Game</h1>
                 <form action="/addGame" method="post">
+                    <div id="error"></div>
                     <div class="form-group">
                         <label>Title</label>
                         <input type="text" class="form-control" name="title" required="required">
@@ -52,4 +53,41 @@
             </div>
         </div>
     </body>
+    <script>
+        const validatePrice = number =>{
+            const regex = new RegExp("^([1-9]{1})([0-9])*\.([0-9]{1,2})$");
+            if (!regex.test(number)){
+                return false;
+            }
+            return true
+        }
+
+        const addGame=()=>{
+            const title = document.getElementById('title').value
+            const publisher = document.getElementById('publisher').value
+            const release_date = document.getElementById('release_date').value
+            const genre = document.getElementById('genre').value
+            const short_description = document.getElementById('short_description').value
+            const price = document.getElementById('price').value
+
+            if(validatePrice(price)){
+                const body = {
+                    title: title,
+                    publisher: publisher,
+                    release_date: release_date, 
+                    genre: genre,
+                    short_description: short_description,
+                    price: price,
+                }
+                axios.post(`addGame`, body).then(()=>{
+                    window.location.replace('/listOfGames')
+                })
+            }else{
+                let error =  document.getElementById('error')
+                error.classList.add("alert")
+                error.classList.add("alert-danger")
+                error.innerHTML = "Wrong price format"
+            }
+        }
+    </script>
 </html>

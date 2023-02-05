@@ -10,6 +10,12 @@
         input {
             margin-bottom: 5px
         }
+        .yellow {
+            background-color: rgb(249, 249, 97);
+        }
+        .red {
+            background-color: rgb(243, 123, 121);
+        }
     </style>
 </head>
 <body>
@@ -63,6 +69,11 @@
             price: '<%= game.price%>',
         })
     '<%})%>'
+    const removeGame = (gameId) =>{
+        axios.delete(`/removeGame?game_id=${gameId}`).then((res)=>{
+            open(location, '_self')
+        })
+    }
     const searchGames = (searched) =>{
         window.location.href=`/searchByTitle?title=${searched}`
     }
@@ -88,8 +99,29 @@
             newLink.classList.add("btn")
             newLink.classList.add("btn-default")
             newLink.href=`/gameInfo/${game._id}`
-
             newLi.appendChild(newLink)
+
+            if('<%= user.role%>' === 'ADMIN'){
+                let updateLink = document.createElement('a');
+                let deleteButton = document.createElement('button');
+
+                updateLink.classList.add("btn");
+                updateLink.classList.add("btn-default");
+                updateLink.classList.add("yellow");
+                updateLink.href=`/updateGame/${game._id}`;
+                updateLink.innerHTML = 'update game'
+
+                deleteButton.classList.add("btn");
+                deleteButton.classList.add("btn-default");
+                deleteButton.classList.add("red");
+                deleteButton.onclick=()=>{
+                    removeGame(game._id)
+                };
+                deleteButton.innerHTML = 'delete game'
+
+                newLi.appendChild(updateLink);
+                newLi.appendChild(deleteButton);
+            }
             gamesUl.appendChild(newLi)
         })
     }

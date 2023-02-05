@@ -24,6 +24,7 @@
                 </nav>
                 <!--<form action="/updateGame/<%= game._id%>" method="post">-->
                 <div>
+                    <div id="error"></div>
                     <div class="form-group">
                         <label>Title</label>
                         <div class="form-control"><%= game.title%></div>
@@ -63,6 +64,14 @@
         </div>
     </body>
     <script>
+        const validatePrice = number =>{
+            const regex = new RegExp("^([1-9]{1})([0-9])*\.([0-9]{1,2})$");
+            if (!regex.test(number)){
+                return false;
+            }
+            return true
+        }
+        
         const updateGame = (gameId) =>{
             const title = document.getElementById('title').value
             const publisher = document.getElementById('publisher').value
@@ -70,17 +79,25 @@
             const genre = document.getElementById('genre').value
             const short_description = document.getElementById('short_description').value
             const price = document.getElementById('price').value
-            const body = {
-                title: title,
-                publisher: publisher,
-                release_date: release_date, 
-                genre: genre,
-                short_description: short_description,
-                price: price,
+            
+            if(validatePrice(price)){
+                const body = {
+                    title: title,
+                    publisher: publisher,
+                    release_date: release_date, 
+                    genre: genre,
+                    short_description: short_description,
+                    price: price,
+                }
+                axios.put(`/updateGame?game_id=${gameId}`, body).then(()=>{
+                    window.location.replace('/listOfGames')
+                })
+            }else{
+                let error =  document.getElementById('error')
+                error.classList.add("alert")
+                error.classList.add("alert-danger")
+                error.innerHTML = "Wrong price format"
             }
-            axios.put(`/updateGame?game_id=${gameId}`, body).then(()=>{
-                window.location.replace('/listOfGames')
-            })
         }
     </script>
 </html>

@@ -175,10 +175,11 @@ module.exports = function(app, neo_driver) {
 
     app.delete('/removeGame',isLoggedIn, isAdmin, function(req, res) { 
         const game_id = req.query.game_id.replace('.', '')
-        gameManage.removeGame(game_id, neo_driver).then(res=>{
-            if(res==='success'){
+        gameManage.removeGame(game_id, neo_driver).then((result)=>{
+            if(result==='success'){
                 res.sendStatus(204)
             }else{
+                console.log(result)
                 res.sendStatus(400)
             }
         })
