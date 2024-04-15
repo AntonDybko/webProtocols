@@ -1,1 +1,1 @@
-5.	web Protocols. This project is an express ejs app integrated with mongo db, I used mqtt to to manage chats. Users can create chats or join them. Additionally, moderators and administrators possess the authority to mute users, effectively preventing them from participating in chat conversations.
+This project is an express ejs app integrated with mongo db, I used mqtt to to manage chats. Users can create chats or join them. Additionally, moderators and administrators possess the authority to mute users, effectively preventing them from participating in chat conversations.
